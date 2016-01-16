@@ -1,0 +1,4 @@
+4. refactor the ssh module. it's very, very ugly.
+8. come up with a name convention of module names and such
+10. insert logging in plugins
+11. README -> README.md
