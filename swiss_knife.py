@@ -27,6 +27,10 @@ class SwissKnife(object):
         self._config = self._read_config()
         self._logging_init()
 
+        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].pop("cache_folder",
+                                                                                                  "~/.sk")))
+        self._cache_folder_init()
+
         self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules = self._modules_import()
         self._available_commands,self._available_parsers = self._get_available_commands_and_parsers()
         self._commands_help_message, self._parsers_help_message, \
@@ -61,6 +65,14 @@ class SwissKnife(object):
         logging.basicConfig(filename=logfile, filemode='a', level=loglevel,
                             format='[%(asctime)s] %(levelname)s : %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logging.debug("sk started")
+
+    def _cache_folder_init(self):
+        if not os.path.exists(self._cache_folder_expanded):
+            try:
+                os.mkdir(self._cache_folder_expanded)
+            except OSError:
+                self._die("Couldn't create folder {0}. Check permissions".format(self._cache_folder_expanded))
+
 
     @staticmethod
     def _die(diemsg):
@@ -297,7 +309,8 @@ class SwissKnife(object):
                                                                         command_args=self._command_args,
                                                                         sk_dir=self._sk_dir,
                                                                         sk_path=self._sk_path,
-                                                                        cwd=self._cwd)
+                                                                        cwd=self._cwd,
+                                                                        cache_folder=self._cache_folder_expanded)
 
         logging.info("Executing command with config: {0}".format(self._config[self._command_executer_name]))
         obj = self._command_executer_class(**self._config[self._command_executer_name])
