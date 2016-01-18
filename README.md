@@ -21,6 +21,7 @@ for sk-foreman plugin:
 AFAIK, all of these can be installed via `pip`. For more information, please refer to corresponding sites. At this moment there is no setup/dependency mechanism at all.
 
 Typical usage looks like
+
 ```sk pssh %hostgroup1[,[-]^hostgroup2,...,host1,[-]host2] uptime```
 
 which executes uptime on all the hosts over ssh in parallel fashion.
@@ -32,7 +33,7 @@ All the commands, hostgroup modifiers and parsers code is defined through plugin
 You can find some working modules there mentioned above, as well as dummy examples in sk-modules/sk-modules-examples .
 Further help can be found in sk_classes.py, which you should import when defining your own command and/or parser modules.
 
-For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist, or a command that will take a Nagios hostgroup and do something with it using Nagios api.
+For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist, or a command that will take a Nagios hostgroup and do something with it using Nagios API.
 Information that's used for modules to work (such as authentication information for various APIs) may be stored in config named sk.ini.
 
 Please note that:
@@ -40,7 +41,7 @@ Please note that:
     all the information needed to run a command is added to class attributes, more info on that in sk_classes
     all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; [Main] section is for sk program
 
-From the box, sk supports expanding zabbix hostgroups (`^` modifier), caspd hostgroups (`%` modifier), running commands over ssh (`ssh` and `pssh` commands) and copying files over ssh (`dist` command, recursive and without preserving times by default).
+From the box, sk supports expanding zabbix hostgroups (`^` modifier), caspd hostgroups (`%` modifier), running commands over ssh (`ssh` and `pssh` commands), copying files over ssh (`dist` command, recursive and without preserving times by default), and getting and setting hosts environments in `foreman` (`getenv` and `setenv` commands).
 
 As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important (say, potentially destructive) tasks. i.e. restarting/reinstalling important services, seding mission critical configs, etc. Always double-check command's result on one host before applying it to whole production.
 
