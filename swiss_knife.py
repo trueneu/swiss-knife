@@ -14,7 +14,11 @@ class SwissKnife(object):
 
     _environment = "production"
     _sk_modules_dir = "sk-modules"
-    _sk_config_path = "sk.ini"
+
+    if _environment == "production":
+        _sk_config_path = "sk.ini"
+    elif _environment == "testing":
+        _sk_config_path = "sk-private.ini"
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -301,6 +305,6 @@ class SwissKnife(object):
         try:
             obj.run_command()
         except sk_classes.SKCommandError as e:
-            self._die("Command class {0} died with message: {1}".format(self._command_executer_class, str(e)))
+            self._die("Command class {0} died with message: {1}".format(self._command_executer_name, str(e)))
         logging.debug("sk finished")
 
