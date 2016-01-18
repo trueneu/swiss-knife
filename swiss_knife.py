@@ -12,7 +12,7 @@ import sys
 class SwissKnife(object):
     _version = "0.01a"
 
-    _environment = "production"
+    _environment = "testing"
     _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
@@ -89,7 +89,7 @@ class SwissKnife(object):
             try:
                 module = __import__(module_full_name, fromlist=[self._sk_modules_dir])
             except ImportError as e:
-                self._die("Couldn't import module {0}.".format(module_full_name))
+                self._die("Couldn't import module {0}: {1}.".format(module_full_name, str(e)))
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                    if inspect.isclass(obj) and issubclass(obj, sk_classes.SKPlugin)])
 
