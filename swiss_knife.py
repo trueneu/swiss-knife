@@ -14,7 +14,11 @@ class SwissKnife(object):
 
     _environment = "production"
     _sk_modules_dir = "sk-modules"
-    _sk_config_path = "sk.ini"
+
+    if _environment == "production":
+        _sk_config_path = "sk.ini"
+    elif _environment == "testing":
+        _sk_config_path = "sk-private.ini"
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
