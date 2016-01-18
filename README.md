@@ -37,9 +37,9 @@ For example, if you use Nagios in your environment, you can write a parser that 
 Information that's used for modules to work (such as authentication information for various APIs) may be stored in config named sk.ini.
 
 Please note that:
-    if a parser doesn't return any hosts, its job is considered failed and program stops;
-    all the information needed to run a command is added to class attributes, more info on that in sk_classes
-    all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; [Main] section is for sk program
+- if a parser doesn't return any hosts, its job is considered failed and program stops
+- all the information needed to run a command is added to class attributes, more info on that in sk_classes
+- all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; [Main] section is for sk program
 
 From the box, sk supports expanding zabbix hostgroups (`^` modifier), caspd hostgroups (`%` modifier), running commands over ssh (`ssh` and `pssh` commands), copying files over ssh (`dist` command, recursive and without preserving times by default), and getting and setting hosts environments in `foreman` (`getenv` and `setenv` commands).
 
