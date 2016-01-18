@@ -10,7 +10,6 @@ import sys
 
 
 class SwissKnife(object):
-
     _version = "0.01a"
 
     _environment = "testing"
