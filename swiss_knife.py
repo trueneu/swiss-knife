@@ -12,7 +12,7 @@ import sys
 class SwissKnife(object):
     _version = "0.01a"
 
-    _environment = "production"
+    _environment = "testing"
     _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
@@ -305,6 +305,6 @@ class SwissKnife(object):
         try:
             obj.run_command()
         except sk_classes.SKCommandError as e:
-            self._die("Command class {0} died with message: {1}".format(self._command_executer_class, str(e)))
+            self._die("Command class {0} died with message: {1}".format(self._command_executer_name, str(e)))
         logging.debug("sk finished")
 

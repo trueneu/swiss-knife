@@ -173,8 +173,7 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
         self._ssh_command = ""
 
         if len(self._command_args) == 0:
-            print("Insufficient arguments.")
-            exit(2)
+            raise sk_classes.SKCommandError("Insufficient arguments.")
 
         for command_arg in self._command_args:
             self._ssh_command += command_arg + ' '
