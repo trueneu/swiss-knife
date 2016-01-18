@@ -1,4 +1,5 @@
 4. refactor the ssh module. it's very, very ugly.
 8. come up with a name convention of module names and such
 10. insert logging in plugins
-11. README -> README.md
+11. implement 'gather' function that gathers file/files from hosts into one location on a local comp
+12. make sk-foreman calls in 1 call via API if that's possible
