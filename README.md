@@ -5,22 +5,17 @@ Installation:
 
 As for now, just download it somewhere, and make sure you have installed
 
-for sk-casp plugin
-
+for sk-casp plugin:
     [requests](https://github.com/kennethreitz/requests)
-
-for sk-zabbix plugin
-
+    
+for sk-zabbix plugin:
     [pyzabbix](https://github.com/lukecyca/pyzabbix)
-
-for sk-ssh-module plugin
-
+    
+for sk-ssh-module plugin:
     [paramiko](https://github.com/paramiko/paramiko)
-
     [scp](https://github.com/jbardin/scp.py)
 
-for sk-foreman plugin
-
+for sk-foreman plugin:
     [python-foreman](https://github.com/david-caro/python-foreman)
 
 AFAIK, all of these can be installed via `pip`. For more information, please refer to corresponding sites. At this moment there is no setup/dependency mechanism at all.
