@@ -81,12 +81,50 @@ def paramiko_scp_thread_run(paramiko_thread_config, source, dest):
     return host, 0
 
 
+def paramiko_scp_gather_thread_run(paramiko_thread_config, source, dest):
+    connect_error_exit_code = 254
+    unknown_error_exit_code = 255
+    scp_error_exit_code = 253
+    host = paramiko_thread_config['hostname']
+
+    paramiko_ssh_client = paramiko.SSHClient()
+    paramiko_ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        paramiko_ssh_client.connect(**paramiko_thread_config)
+    except socket.gaierror as e:
+        print_ssh_line(e.strerror, host, is_err=True, print_prefix=True)
+        return host, connect_error_exit_code
+    paramiko_ssh_transport = paramiko_ssh_client.get_transport()
+
+    scpclient = scp.SCPClient(paramiko_ssh_transport)
+
+    source_basename = os.path.basename(source)
+
+    try:
+        scpclient.get(source, local_path="{0}_{1}".format(source_basename, host), recursive=True)
+    except OSError as e:
+        print_ssh_line(str(e), host, is_err=True)
+        return host, e.errno
+    except scp.SCPException as e:
+        print_ssh_line(str(e), host, is_err=True)
+        return host, scp_error_exit_code
+    except Exception as e:
+        print_ssh_line(str(e), host, is_err=True)
+        return host, unknown_error_exit_code
+
+    paramiko_ssh_client.close()
+    scpclient.close()
+    print_ssh_line("done", host)
+    return host, 0
+
+
 def paramiko_exec_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, cmd, timeout):
     try:
         result = paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout)
     except KeyboardInterrupt:
         pass
     return result
+
 
 def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
     connect_error_exit_code = 254
@@ -160,12 +198,20 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
     paramiko_ssh_client.close()
     return host, paramiko_channel.recv_exit_status()
 
+
+class SSHPluginError(sk_classes.SKCommandError):
+    def __init__(self, message):
+        super(SSHPluginError, self).__init__(message)
+
+
 class SSHPlugin(sk_classes.SKCommandPlugin):
     _commands = {'ssh': {'requires_hostlist': True},
                  'pssh': {'requires_hostlist': True},
-                 'dist': {'requires_hostlist': True}}
-    _commands_help_message = "ssh - execute a command over ssh host by host.\npssh - parallel exec.\ndist - copy " \
-                             "a file over ssh (source [destination])\n"
+                 'dist': {'requires_hostlist': True},
+                 'gather': {'requires_hostlist': True}}
+    _commands_help_message = "ssh - execute a command over ssh host by host.\npssh - parallel exec.\ndist - distribute " \
+                             "a file over ssh to hosts (source [destination, default is cwd])\ngather - gather " \
+                             "remote files from hosts to local machine (source [destination, default is cwd]\n"
 
     def __init__(self, *args, **kwargs):
         super(SSHPlugin, self).__init__(*args, **kwargs)
@@ -186,6 +232,23 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
             else:
                 self._source = self._command_args[0]
                 self._dest = '.'
+
+        if self._command == 'gather':
+            self._source = self._command_args[0]
+            if len(self._command_args) == 2:
+                self._dest = self._command_args[1]
+                if os.path.exists(self._dest):
+                    if not os.path.isdir(self._dest):
+                        raise SSHPluginError("gather command destination can be a directory only.")
+                else:
+                    try:
+                        os.mkdir(self._dest)
+                    except OSError as e:
+                        raise SSHPluginError("couldn't mkdir {0}: {1}".format(self._dest, str(e)))
+            elif len(self._command_args) == 1:
+                self._dest = '.'
+            else:
+                raise SSHPluginError("gather command supports only two args.")
 
         self._hosts = self._hostlist
         self._timeout = int(getattr(self, "_timeout", 5))
@@ -211,8 +274,6 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
 
     def _paramiko_configs_set(self):
         # the way the ssh configuration for making the connections is defined is here
-        # todo redo from dict to list
-        self._paramiko_configs = dict()
 
         self._paramiko_configs = list()
 
@@ -294,6 +355,19 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
             self._pool = multiprocessing.Pool(processes=self._threads_count)
             self._pool_results = [self._pool.apply_async(paramiko_scp_thread_run, (paramiko_thread_config, self._source,
                                                                                    self._dest))
+                                  for paramiko_thread_config in self._paramiko_configs]
+
+            self._pool.close()
+            self._pool.join()
+
+            self._results = [result.get() for result in self._pool_results]
+        elif self._command == "gather":
+            os.chdir(self._dest)
+
+            self._pool = multiprocessing.Pool(processes=self._threads_count)
+            self._pool_results = [self._pool.apply_async(paramiko_scp_gather_thread_run, (paramiko_thread_config,
+                                                                                          self._source,
+                                                                                          self._dest))
                                   for paramiko_thread_config in self._paramiko_configs]
 
             self._pool.close()
