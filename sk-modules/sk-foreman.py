@@ -16,7 +16,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
     _parsers_help_message = ""
 
     _commands = {'getenv': {'requires_hostlist': True}, 'setenv': {'requires_hostlist': True}}
-    _commands_help_message = "getenv - get foreman environment\nsetenv - set foreman environment\n"
+    _commands_help_message = "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n"
 
     def _append_default_domain(self):
         result = list()
