@@ -41,7 +41,7 @@ class SwissKnife(object):
         self._cache_folder_init()
 
         self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules = self._modules_import()
-        self._available_commands,self._available_parsers = self._get_available_commands_and_parsers()
+        self._available_commands, self._available_parsers = self._get_available_commands_and_parsers()
         self._commands_help_message, self._parsers_help_message, \
             self._commands_help_string, self._parsers_help_string = self._form_commands_and_parsers_help()
         self._args = self._parse_args()
