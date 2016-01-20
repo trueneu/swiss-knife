@@ -1,3 +1,11 @@
+"""
+sk - A tiny extendable utility for running commands against multiple hosts.
+
+Copyright (C) 2016  Pavel "trueneu" Gurkov
+
+see sk for more information on License and contacts
+"""
+
 import logging
 import os
 import glob
@@ -7,10 +15,11 @@ import sk_exceptions
 import argparse
 import configparser
 import sys
+import exrex
 
 
 class SwissKnife(object):
-    _version = "0.01a"
+    _version = "0.02a"
 
     _environment = "production"
     _sk_modules_dir = "sk-modules"
@@ -251,10 +260,18 @@ class SwissKnife(object):
         logging.debug("Updated config for class {0}. Now its config is: {1}".format(class_name, config))
         return config
 
+    def _escape_unsafe_characters(self, string):
+        return string.replace('.', r'\.')
+
+
+    def _die_if_unsafe_characters(self, string):
+        if string.find('*') != -1:
+            self._die("Unsafe characters found in hostlist. Exiting")
+
     def _expand_hostlist(self):
         expanded_hostlist = list()  # expanded
 
-        hostgroups = self._hostlist.split(',')
+        hostgroups = self._hostlist.split(' ')
         for hostgroup in hostgroups:
             hostlist_addition = list()
             negation = False
@@ -270,8 +287,11 @@ class SwissKnife(object):
             if hostgroup_modifier not in self._available_parsers:
                 if not hostgroup_modifier.isalpha():
                     self._die("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
-                else:  # hostgroup is a host, not a group
-                    hostlist_addition.append(hostgroup)
+                else:  # hostgroup is a host or a regex, not a group
+                    escaped_hostgroup = self._escape_unsafe_characters(hostgroup)
+                    self._die_if_unsafe_characters(escaped_hostgroup)
+                    hostlist_addition = list(exrex.generate(escaped_hostgroup, limit=1000))
+                    # hostlist_addition.append(hostgroup)
             else:  # we must call a parser
                 parser = self._available_parsers[hostgroup_modifier]
                 parser_name = parser.__name__
