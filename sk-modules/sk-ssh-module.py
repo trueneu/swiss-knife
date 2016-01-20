@@ -1,5 +1,10 @@
-#  this class relies on paramiko class, see http://www.paramiko.org
-#  and scp class, see https://github.com/jbardin/scp.py
+"""
+sk - A tiny extendable utility for running commands against multiple hosts.
+
+Copyright (C) 2016  Pavel "trueneu" Gurkov
+
+see ../sk for more information on License and contacts
+"""
 
 
 import sk_classes

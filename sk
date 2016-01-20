@@ -1,22 +1,24 @@
 #!/usr/bin/env python
+"""
+sk - A tiny extendable utility for running commands against multiple hosts.
 
-#  this will be the main prog
+Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-#  consider this as an usage skeleton:
-#  ./sk command (getenv[ironment], setenv[ironment], desc[ribe a host or a group], [sequential ]exec[ution],
-#  p[arallel]_exec[ution], dist[ribute] a file, etc, ...) list_of_hosts_or_groups (-host, [+]host, [+]%group,
-#  may be combined with commands,
-#  probably will be prefixed differently for different group sources (foreman, casp etc)) positional_parameters (env
-#  name, cmd to exec, etc)
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-#  Also: include command history in commands
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-# transited it to python2.7
-# changes made: config parsing, added __init__.py to sk-modules
-# commented out the super() call in ABCs for commands and parsers
-# changed super() calls to match python2.7 paradigm
-# you need to use python2.7 to run this shit.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+mailto: true.neu@gmail.com
+"""
 
 import os
 import swiss_knife
