@@ -48,7 +48,11 @@ Further help can be found in **sk_classes.py**, which you should import when def
 For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist, or a command that will take a Nagios hostgroup and do something with it using Nagios API.
 Information that's used for modules to work (such as authentication information for various APIs) may be stored in config named **sk.ini**.
 
-From the box, sk supports expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts (`dist` command, recursive and without preserving times by default), copying files from multiple hosts over ssh (`gather`), and getting and setting hosts environments in **Foreman** (`getenv` and `setenv` commands).
+From the box, sk supports expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier),
+running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
+(`dist` command, recursive and without preserving times by default), copying files from multiple
+hosts over ssh (`gather`), getting and setting hosts environments in **Foreman** (`getenv`
+and `setenv` commands) and just displaying results of hostlist expansion (`dr` for 'dry-run')
 
 As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important (say, potentially destructive) tasks. i.e. restarting/reinstalling important services, seding mission critical configs, etc. Always double-check command's result on one host before applying it to whole production.
 
