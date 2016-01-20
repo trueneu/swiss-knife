@@ -5,6 +5,9 @@ A tiny extendable utility for running commands against multiple hosts.
 
 As for now, just download it somewhere, and make sure you have installed
 
+for main program:
+    [exrex](https://github.com/asciimoo/exrex)
+
 for sk-casp plugin:
     [requests](https://github.com/kennethreitz/requests)
     

@@ -48,7 +48,7 @@ class SKCommandPlugin(SKPlugin):
         special variables that might be useful:
           self._sk_dir, self._sk_path - directory and invokation path to main executable
           self._cwd - current working directory at the time main executable was invoked
-          self._cache_dir - a directory where you can store anything related to your module work"""
+          self._cache_folder - a directory where you can store anything related to your module work"""
 
 
 class SKParserPlugin(SKPlugin):
