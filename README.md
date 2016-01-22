@@ -1,7 +1,7 @@
 # swiss-knife
-A tiny extendable utility for running commands against multiple hosts.
+A tiny extendable utility for running commands against multiple hosts (and a little bit more).
 
-### Installation:
+### Installation
 
 As for now, just download it somewhere, and make sure you have installed
 
@@ -22,6 +22,20 @@ for sk-foreman plugin:
     [python-foreman](https://github.com/david-caro/python-foreman)
 
 AFAIK, all of these can be installed via `pip`. For more information, please refer to corresponding sites. At this moment there is no setup/dependency mechanism at all.
+
+### Why I did this and why do you need this?
+I did it simply because there was no such instruments in my environment, and I needed them from time to time.
+As a side note, I hate GUIs and web interfaces for everything that shouldn't be necessary visualized (e.g. UML).
+And I just can't accept that I need to make 10 mouse clicks to change a host's environment in Foreman when I know hostname
+and environment name exactly. So `swiss-knife` is a simple instrument to make simple operations and its functionality
+can be extended rather easily.
+
+There's a few possible reasons you'll find it useful:
+- You are a system administrator. If you're not, it's doubtfully be useful for you
+- You hate clicking GUIs just like me, and your GUI instrument has an API you could use
+- There's no such an instrument in your environment: it's either de-centralized or you don't use configuration
+management software and its tools heavily
+- You'd like to glue altogether all the stuff you use in your environment to classify or group hosts
 
 ### Usage
 Typical usage looks like
@@ -70,5 +84,6 @@ left bracket will be treated as a hostgroup modifier.
 - if a parser doesn't return any hosts, its job is considered failed and program stops
 - all the information needed to run a command is added to class attributes, more info on that in **sk_classes**
 - all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for sk program
+- `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
-Pavel "trueneu" Gurkov, 2016
+(c) Pavel "trueneu" Gurkov, 2016
