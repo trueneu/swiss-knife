@@ -222,7 +222,7 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
 
     def __init__(self, *args, **kwargs):
         super(SSHPlugin, self).__init__(*args, **kwargs)
-
+        os.chdir(self._cwd)
         self._ssh_command = ""
 
         if len(self._command_args) == 0:
@@ -358,7 +358,6 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
                 sys.exit(2)
 
         elif self._command == "dist":
-            os.chdir(self._cwd)
             self._pool = multiprocessing.Pool(processes=self._threads_count)
             self._pool_results = [self._pool.apply_async(paramiko_scp_thread_run, (paramiko_thread_config, self._source,
                                                                                    self._dest))
