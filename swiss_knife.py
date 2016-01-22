@@ -21,7 +21,7 @@ import exrex
 class SwissKnife(object):
     _version = "0.02a"
 
-    _environment = "production"
+    _environment = "testing"
     _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
