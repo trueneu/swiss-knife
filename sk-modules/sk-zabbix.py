@@ -21,7 +21,7 @@ class ZabbixPlugin(sk_classes.SKCommandPlugin, sk_classes.SKParserPlugin):
     _commands = {'lszbx': {'requires_hostlist': False}}
     _commands_help_message = "lszbx - list zabbix hostgroups\n"
     _parsers = ['^']
-    _parsers_help_message = "^zabbix_hostgroup\n"
+    _parsers_help_message = "^zabbix_hostgroup, ^ALL for all hosts from zabbix\n"
 
     def __init__(self,  *args, **kwargs):
         super(ZabbixPlugin, self).__init__(*args, **kwargs)
@@ -63,5 +63,17 @@ class ZabbixPlugin(sk_classes.SKCommandPlugin, sk_classes.SKParserPlugin):
         logging.debug("Expanded zabbix hostgroup {0} into {1}".format(self._hostgroup, result))
         return result
 
+    def _zabbix_list_all_hosts(self):
+        result = list()
+        zapi = self._zbx_connect()
+        hosts = zapi.host.get(output=["host"])
+        for host in hosts:
+            result.append(host["host"])
+        logging.debug("Expanded zabbix hostgroup {0} into {1}".format(self._hostgroup, result))
+        return result
+
     def parse(self):
-        return self._zabbix_expand_hostgroup()
+        if not self._hostgroup == 'ALL':
+            return self._zabbix_expand_hostgroup()
+        else:
+            return self._zabbix_list_all_hosts()

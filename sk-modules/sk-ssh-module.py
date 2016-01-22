@@ -139,8 +139,8 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
     paramiko_ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         paramiko_ssh_client.connect(**paramiko_thread_config)
-    except socket.gaierror as e:
-        print_ssh_line(e.strerror, host, is_err=True, print_prefix=True)
+    except (socket.gaierror, socket.error) as e:
+        print_ssh_line(str(e), host, is_err=True, print_prefix=True)
         return host, connect_error_exit_code
     paramiko_ssh_transport = paramiko_ssh_client.get_transport()
     paramiko_channel = paramiko_ssh_transport.open_session()

@@ -58,7 +58,7 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
                 host = parts[2]
                 result.append(host)
 
-        logging.debug("All Casp hosts: {0}".format(result))
+        logging.debug("Expanded Casp hostgroup {0} into {1}".format(self._hostgroup, result))
         return result
 
     def _casp_expand_hostgroup(self):
