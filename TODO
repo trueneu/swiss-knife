@@ -3,3 +3,6 @@
 10. insert logging in plugins
 13. catch paramiko.ssh_exception.% is ssh module
 15. make mntnce command - maintenance adding/editing in zabbix
+16. gather appears not to work for multiple hosts AND dir, possibly in other cases
+17. implement a special ALL hostgroup
+18. implement addcls, rmcls commands for foreman
