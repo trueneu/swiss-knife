@@ -271,7 +271,12 @@ class SwissKnife(object):
     def _expand_hostlist(self):
         expanded_hostlist = list()  # expanded
 
-        hostgroups = self._hostlist.split(' ')
+        #if self._hostlist[0] == "'" and self._hostlist[:-1] == "'":
+        #    self._hostlist = self._hostlist[1:-1]
+
+        # yeah, maybe we'll need that dirty hack in the future
+
+        hostgroups = self._hostlist.split(',')
         for hostgroup in hostgroups:
             hostlist_addition = list()
             negation = False

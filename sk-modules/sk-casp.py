@@ -19,13 +19,14 @@ class CASPError(sk_classes.SKParsingError, sk_classes.SKCommandError):
 
 class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
     _parsers = ['%']
-    _parsers_help_message = "%casp_hostgroup\n"
+    _parsers_help_message = "%casp_hostgroup (%ALL for all hosts)\n"
 
     _commands = {'lscasp': {'requires_hostlist': False}}
     _commands_help_message = "lscasp - list casp hostgroups\n"
 
     _casp_api_hostgroups_groupnames_uri = "hostgroups?groupNames=true"
     _casp_api_hostgroup_uri = "hostgroups?group"
+    _casp_api_hostgroup_all_hosts_uri = "hostgroups"
 
     def __init__(self, *args, **kwargs):
         super(CaspPlugin, self).__init__(*args, **kwargs)
@@ -44,6 +45,21 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         except Exception as e:
             raise CASPError("Unknown error in CASP module: %s" % str(e.message))
         return data
+
+    def _casp_list_all_hosts(self):
+        result = list()
+
+        url = "{0}/{1}".format(self._casp_api_url, self._casp_api_hostgroup_all_hosts_uri)
+
+        data = self._get_data(url)
+        for line in data.content.split('\n'):
+            parts = line.split()
+            if len(parts) == 3:
+                host = parts[2]
+                result.append(host)
+
+        logging.debug("All Casp hosts: {0}".format(result))
+        return result
 
     def _casp_expand_hostgroup(self):
         result = list()
@@ -77,7 +93,10 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
             sys.stdout.write(part + "\n")
 
     def parse(self):
-        return self._casp_expand_hostgroup()
+        if not self._hostgroup == 'ALL':
+            return self._casp_expand_hostgroup()
+        else:
+            return self._casp_list_all_hosts()
 
     def run_command(self):
         if self._command == 'lscasp':
