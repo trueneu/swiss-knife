@@ -26,16 +26,17 @@ AFAIK, all of these can be installed via `pip`. For more information, please ref
 ### Usage
 Typical usage looks like
 
-```sk pssh "%hostgroup1[ [-]^hostgroup2 ... host1 [-]host2]" uptime```
+```sk pssh "%hostgroup1[,[-]^hostgroup2,..,host1,[-]host2]" uptime```
 
 which executes uptime on all the hosts over ssh in parallel fashion.
 
 `%`, `^` and other non-alphabetical characters can be treated as hostgroup modifiers which indicate which parser should expand a given hostgroup into a host list.
 hyphen (`-`) in front of hostgroup or a host means that hostgroup or host will be excluded from resulting list.
-A host may be a simple regex (no * quantificator or anychar (.), and lookahead/lookbehind look useless in this case), `sk` will
+A host may be a simple regex (no * quantificator or anychar (.), no lookahead/lookbehinds, no commas as comma is a hostgroups separator,
+so no {n,m} style regexes), `sk` will
 generate strings that match it and use it as hosts. If you're excluding hosts that aren't included yet, nothing happens. Hostlist is expanded from left to right. Example:
 
-```sk pssh "^g1 -host[1234]" echo Yay```
+```sk pssh "^g1,-host[1234]" echo Yay```
 
 will execute `echo Yay` in parallel fashion on each host that's in zabbix hostgroup `g1` except hosts `host1`, `host2`, `host3` and `host4`.
 
@@ -48,11 +49,14 @@ Further help can be found in **sk_classes.py**, which you should import when def
 For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist, or a command that will take a Nagios hostgroup and do something with it using Nagios API.
 Information that's used for modules to work (such as authentication information for various APIs) may be stored in config named **sk.ini**.
 
-From the box, sk supports expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier),
-running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
+From the box, sk supports:
+- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
+- running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
 (`dist` command, recursive and without preserving times by default), copying files from multiple
-hosts over ssh (`gather`), getting and setting hosts environments in **Foreman** (`getenv`
-and `setenv` commands) and just displaying results of hostlist expansion (`dr` for 'dry-run')
+hosts over ssh (`gather`)
+- getting and setting hosts environments in **Foreman** (`getenv`
+and `setenv` commands), getting classes linked to hosts (`getcls`)
+- and just displaying results of hostlist expansion (`dr` for 'dry-run')
 
 As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important (say, potentially destructive) tasks. i.e. restarting/reinstalling important services, seding mission critical configs, etc. Always double-check command's result on one host before applying it to whole production.
 
@@ -61,7 +65,7 @@ There may be some issues with configparser. If there are, please notify me. In f
 The code itself should work on python2.7.10+, python3+ but it haven't been tested at all on python3+ (ssh module doesn't work properly in 3.5 due to either author's stupidity or paramiko bug. Author hasn't tried other versions).
 
 #### Notes:
-- currently, host cannot start with non-alphanumerical character. This breaks using something like (host){1,2} as a host as
+- currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
 left bracket will be treated as a hostgroup modifier.
 - if a parser doesn't return any hosts, its job is considered failed and program stops
 - all the information needed to run a command is added to class attributes, more info on that in **sk_classes**
