@@ -31,9 +31,9 @@ and environment name exactly. So `swiss-knife` is a simple instrument to make si
 can be extended rather easily.
 
 There's a few possible reasons you'll find it useful:
-- You are a system administrator. If you're not, it's doubtfully be useful for you
+- You are a system administrator. If you're not, it's doubtfully be useful for you in any way
 - You hate clicking GUIs just like me, and your GUI instrument has an API you could use
-- There's no such an instrument in your environment: it's either de-centralized or you don't use configuration
+- There's no such an instrument in your environment: it's either de-centralized and/or you don't use configuration
 management software and its tools heavily
 - You'd like to glue altogether all the stuff you use in your environment to classify or group hosts
 
