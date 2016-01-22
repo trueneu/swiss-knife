@@ -23,8 +23,10 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
     _parsers = []
     _parsers_help_message = ""
 
-    _commands = {'getenv': {'requires_hostlist': True}, 'setenv': {'requires_hostlist': True}}
-    _commands_help_message = "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n"
+    _commands = {'getenv': {'requires_hostlist': True}, 'setenv': {'requires_hostlist': True},
+                 'getcls': {'requires_hostlist': True}}
+    _commands_help_message = "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n" \
+                             "getcls - get assigned puppet classes\n"
 
     def _append_default_domain(self):
         result = list()
@@ -48,7 +50,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
     def _foreman_api_init(self):
         return Foreman(self._foreman_url, (self._user, self._password), verify=self._verify_ssl_boolean, api_version=2)
 
-    def _get_hosts_info(self):
+    def _get_verbose_hosts_info(self):
         result = list()
         for host in self._hostlist_def_domain:
             result.append(self._fapi.hosts.show(id=host))
@@ -115,11 +117,26 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         environment_id = self._get_environment_id(environment)
         self._set_hosts_environment(environment_id)
 
+    def _getcls(self):
+        hosts_info = self._get_verbose_hosts_info()
+        try:
+            for host_info in hosts_info:
+                try:
+                    for puppet_class in host_info['all_puppetclasses']:
+                        SKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
+                                                                      host_info['name'])
+                except KeyError:
+                    raise ForemanException("Foreman info about host says it has no 'all_puppetclasses' field")
+        except ForemanException as e:
+            raise sk_classes.SKCommandError(str(e))
+
     def run_command(self):
         if self._command == 'getenv':
             self._getenv()
         elif self._command == 'setenv':
             self._setenv()
+        elif self._command == 'getcls':
+            self._getcls()
 
     def parse(self):
         pass
