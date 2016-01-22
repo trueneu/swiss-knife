@@ -2,4 +2,4 @@
 8. come up with a name convention of module names and such
 10. insert logging in plugins
 13. catch paramiko.ssh_exception.% is ssh module
-14. implement a reverse regexp in swiss_knife parser
+15. make mntnce command - maintenance adding/editing in zabbix
