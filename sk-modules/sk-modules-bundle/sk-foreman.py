@@ -12,7 +12,6 @@ from sk_helper_functions import SKHelperFunctions
 import sys
 import os
 import datetime
-import inspect
 
 class ForemanError(sk_classes.SKParsingError, sk_classes.SKCommandError):
     def __init__(self, message):
