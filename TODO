@@ -4,5 +4,5 @@
 13. catch paramiko.ssh_exception.% is ssh module
 15. make mntnce command - maintenance adding/editing in zabbix
 18. implement addcls, rmcls commands for foreman ; addgcls, rmgcls, getgcls for hostgroups
-19. think about field separator for hostlist. Zabbix hostgroups may legally contain whitespace characters. - switched to , - fuck all those {n,m} regex
-22.
+22. implement pip/easy_install ?
+24. write own setup.py files for all the plugins? omg.
