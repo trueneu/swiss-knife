@@ -53,7 +53,8 @@ and `setenv` commands), getting, adding and removing classes linked to hosts and
 
 **By default, all the modules but `dr` and `ssh` module are turned off.**
 To enable them, you need to copy corresponding files from sk-modules/sk-modules-bundle to sk-modules dir, or
-just symlink them (**symlink names have to end with '.py'**).
+just symlink them (**symlink names have to end with '.py'**). To symlink all the modules present at once, run enable-all-modules.sh
+script.
 
 ### Examples
 Imagine that you need to grep all your frontend nginx logs for string '/api/do_something'. Your frontend hostnames
