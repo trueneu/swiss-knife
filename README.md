@@ -101,7 +101,7 @@ the access.log files, appending a suffix so you can tell from which host each lo
 
 Say you have a Zabbix installation in your environment, and all the frontends are in 'frontend' hostgroup.
 You can do the same as above using zabbix hostgroup expansion (note that `zabbix` module is disabled by
- default. More on that in **Details** section)
+ default. More on that in [bundled modules](#bundled-modules-(plugins)) section above)
 
 ```sk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production```
 
