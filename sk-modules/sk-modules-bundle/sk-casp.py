@@ -19,10 +19,10 @@ class CASPError(sk_classes.SKParsingError, sk_classes.SKCommandError):
 
 class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
     _parsers = ['%']
-    _parsers_help_message = "%casp_hostgroup (%ALL for all hosts)\n"
+    _parsers_help_message = "%casp_hostgroup, %ALL for all hosts\n"
 
     _commands = {'lscasp': {'requires_hostlist': False}}
-    _commands_help_message = "lscasp - list casp hostgroups\n"
+    _commands_help_message = "Casp plugin:\nlscasp - list casp hostgroups\n\n"
 
     _casp_api_hostgroups_groupnames_uri = "hostgroups?groupNames=true"
     _casp_api_hostgroup_uri = "hostgroups?group"

@@ -11,7 +11,7 @@ import sk_classes
 
 class DryRunPlugin(sk_classes.SKCommandPlugin):
     _commands = {'dr': {'requires_hostlist': True}}
-    _commands_help_message = "dr - do nothing, just print hostlist\n"
+    _commands_help_message = "Dry run Plugin:\ndr - do nothing, just print hostlist\n\n"
 
     def __init__(self, *args, **kwargs):
         super(DryRunPlugin, self).__init__(*args, **kwargs)

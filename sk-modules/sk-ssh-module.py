@@ -214,11 +214,12 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
                  'pssh': {'requires_hostlist': True},
                  'dist': {'requires_hostlist': True},
                  'gather': {'requires_hostlist': True}}
-    _commands_help_message = "ssh - execute a command over ssh host by host (cmd)\npssh - parallel exec (cmd)\n" \
+    _commands_help_message = "SSH plugin:\nssh - execute a command over ssh host by host (cmd)\n" \
+                             "pssh - parallel exec (cmd)\n" \
                              "dist - distribute " \
                              "a file over ssh to hosts (source [destination, default is cwd])\ngather - gather " \
                              "remote files from hosts to local machine (source [destination, default is cwd]). " \
-                             "gather adds a suffix (_hostname) to local filenames\n"
+                             "gather adds a suffix (_hostname) to local filenames\n\n"
 
     def __init__(self, *args, **kwargs):
         super(SSHPlugin, self).__init__(*args, **kwargs)
