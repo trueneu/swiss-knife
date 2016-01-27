@@ -6,4 +6,5 @@
 22. implement pip/easy_install ?
 24. write own setup.py files for all the plugins? omg.
 25. write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
-26. make an interactive shell mode
+26. make an interactive shell mode (pypsi?)
+27. add get/set/destroy Foreman parameters commands
