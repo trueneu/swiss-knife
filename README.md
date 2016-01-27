@@ -115,7 +115,7 @@ Imagine that you have Foreman installation and you need to set all the frontends
 
 ```sk setenv ^frontend development```
 
-...or add to frontend Foreman hostgroup your brand new `nginx::verbose_access_logs` class
+...or add to frontend Foreman hostgroup your brand new `nginx::verbose_access_logs` Puppet class
 
 ```sk addgcls frontend nginx::verbose_access_logs```
 
@@ -148,24 +148,35 @@ There's a few possible reasons you'll find it useful:
 management software and its tools heavily
 - You'd like to glue altogether all the stuff you use in your environment to classify or group hosts
 
-### Known issues
+### Known issues and notes
 
-As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important (say, potentially destructive) tasks. i.e. restarting/reinstalling important services, seding mission critical configs, etc. Always double-check command's result on one host before applying it to whole production.
+As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important
+(say, potentially destructive) tasks. i.e. restarting/reinstalling important services,
+`sed`ing mission critical configs, etc. Always double-check command's result on one host before applying it to whole production,
+use `dr` command.
 
 There may be some issues with configparser. If there are, please notify me. In fact, there may be issues with anything.
 
-The code itself should work on python2.7.10+, python3+ but it haven't been tested at all on python3+ (ssh module doesn't work properly in 3.5 due to either author's stupidity or paramiko bug. Author hasn't tried other versions).
+The code itself should work on python2.7.10+, python3+ but it haven't been tested at all on python3+
+(ssh module doesn't work properly in 3.5 due to either author's stupidity or `paramiko` bug. Author
+hasn't tried other versions).
 
-### Contributions
-Please do! Don't forget to exclude sensitive details from `sk.ini` and change `SwissKnife`
-`_environment` attribute to `production` when pushing.
+###### Usage notes
 
-#### Notes:
 - currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
 left bracket will be treated as a hostgroup modifier.
+- ssh module needs a running ssh-agent with private keys added, or private keys need to remain password free
+- username for ssh specified in sk.ini will override your current username and username from .ssh/config if present
+
+###### Dev notes
+
 - if a parser doesn't return any hosts, its job is considered failed and program stops
 - all the information needed to run a command is added to class attributes, more info on that in **sk_classes**
 - all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for sk program
 - `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
+
+### Contributions
+Please do! Don't forget to exclude sensitive details from `sk.ini` and change `SwissKnife`
+`_environment` attribute to `production` when pushing.
 
 (c) Pavel "trueneu" Gurkov, 2016
