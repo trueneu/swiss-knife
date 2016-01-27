@@ -119,6 +119,14 @@ Imagine that you have Foreman installation and you need to set all the frontends
 
 ```sk addgcls frontend nginx::verbose_access_logs```
 
+Remember to use and escape quotes when needed!
+
+```sk pssh ^mysql mysql -e 'show variables like "read_only"'``` won't work (due to shell quote processing,
+it represents `mysql -e show variables like "read only"`), but
+
+```sk pssh ^mysql "mysql -e 'show variables like \"read_only\"'"``` will.
+
+
 You can get more info on available parsers, commands and arguments by running `sk -h` .
 
 If you need to change your default SSH user, parallel processes count, API credentials or such,
@@ -146,7 +154,8 @@ There's a few possible reasons you'll find it useful:
 - You hate clicking GUIs just like me, and your GUI instrument(s) has an API you could use
 - There's no such an instrument in your environment: it's either de-centralized and/or you don't use configuration
 management software and its tools heavily
-- You'd like to glue altogether all the stuff you use in your environment to classify or group hosts
+- You'd like to glue altogether all the stuff you use in your environment to classify or group hosts and you know
+a little bit of python
 
 ### Known issues and notes
 

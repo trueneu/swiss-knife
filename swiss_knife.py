@@ -200,6 +200,9 @@ class SwissKnife(object):
 
         result['command_args'] = args.command_args
 
+#        #DEBUG PRINT
+#        print(result['command_args'])
+
         return result
 
     def _read_config(self):
