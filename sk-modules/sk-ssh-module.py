@@ -159,19 +159,19 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
             break_next_time = True
 
         if paramiko_channel.recv_ready():
-            recv_buffer += str(paramiko_channel.recv(4096))
+            recv_buffer += paramiko_channel.recv(4096).decode()
         if paramiko_channel.recv_stderr_ready():
-            recv_stderr_buffer += str(paramiko_channel.recv_stderr(4096))
+            recv_stderr_buffer += paramiko_channel.recv_stderr(4096).decode()
 
         if break_next_time:  # we should read until it's all in the buffer as we'll have no further opportunity
             while True:
-                recv = str(paramiko_channel.recv(4096))
+                recv = paramiko_channel.recv(4096).decode()
                 recv_buffer += recv
                 if len(recv) == 0:
                     break
 
             while True:
-                recv_stderr = str(paramiko_channel.recv_stderr(4096))
+                recv_stderr = paramiko_channel.recv_stderr(4096).decode()
                 recv_stderr_buffer += recv_stderr
                 if len(recv_stderr) == 0:
                     break
