@@ -166,9 +166,7 @@ use `dr` command.
 
 There may be some issues with configparser. If there are, please notify me. In fact, there may be issues with anything.
 
-The code itself should work on python2.7.10+, python3+ but it haven't been tested at all on python3+
-(ssh module doesn't work properly in 3.5 due to either author's stupidity or `paramiko` bug. Author
-hasn't tried other versions).
+The code itself should work on python2.7.10+, python3+.
 
 ###### Usage notes
 
