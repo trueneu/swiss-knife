@@ -53,7 +53,7 @@ and `setenv` commands), getting, adding and removing classes linked to hosts and
 
 **By default, all the modules but `dr` and `ssh` module are turned off.**
 To enable them, you need to copy corresponding files from sk-modules/sk-modules-bundle to sk-modules dir, or
-just symlink them (**symlink names have to end with '.py'**). To symlink all the modules present at once, run enable-all-modules.sh
+just symlink them (**symlink names have to end with '.py'**). To symlink all the modules present at once, run `enable-all-modules.sh`
 script.
 
 ### Examples
@@ -83,6 +83,11 @@ frontend24
 frontend25
 ```
 
+Suppose you also have servers `backend01`, `backend02`, ..., `backend10`, and you want to run `uptime` on both
+frontends and backends. Try this one:
+
+```sk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00,backend(0[1-9]|10)' uptime```
+
 Now imagine you have to execute a certain script named `test.sh` on those 25 frontends locally. First, copy it to target hosts:
 
 ```sk dist 'frontend([0-1][0-9]|2[0-5]),-frontend00' ./my_scripts/test.sh /usr/share/```
@@ -92,7 +97,7 @@ and then execute it:
 ```sk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' /usr/share/test.sh```
 
 Imagine you need to do something with nginx logs locally on your computer (say, a simple statistics calculation).
-You can gather all the logs to your machine with 1 command:
+You can gather all the logs to your machine with one command:
 
 ```sk gather 'frontend([0-1][0-9]|2[0-5]),-frontend00' /var/log/nginx/access.log ./nginx-logs-from-production```
 
