@@ -26,7 +26,7 @@ except SyntaxError:
 class SwissKnife(object):
     _version = "0.02a"
 
-    _environment = "testing"
+    _environment = "production"
     _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
