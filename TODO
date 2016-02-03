@@ -17,3 +17,4 @@
 26.8 rewrite sk-ssh ctrl+c exiting/catching
 27. add get/set/destroy Foreman parameters commands
 28. fix passing wrong host to foreman getcls, try another cmds
+29. dig into argparse vs shlex to avoid needless quote escaping
