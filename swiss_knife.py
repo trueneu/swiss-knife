@@ -24,7 +24,7 @@ except SyntaxError:
     shell_mode_off = True
 
 class SwissKnife(object):
-    _version = "0.02a"
+    _version = "0.03a"
 
     _environment = "production"
     _sk_modules_dir = "sk-modules"
