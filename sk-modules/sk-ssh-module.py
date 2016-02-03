@@ -51,6 +51,22 @@ def paramiko_thread_init():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
+def paramiko_scp_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, source, dest):
+    try:
+        result = paramiko_scp_thread_run(paramiko_thread_config, source, dest)
+    except KeyboardInterrupt:
+        pass
+    return result
+
+
+def paramiko_scp_gather_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, source, dest):
+    try:
+        result = paramiko_scp_gather_thread_run(paramiko_thread_config, source, dest)
+    except KeyboardInterrupt:
+        pass
+    return result
+
+
 def paramiko_scp_thread_run(paramiko_thread_config, source, dest):
     connect_error_exit_code = 254
     unknown_error_exit_code = 255
@@ -213,10 +229,13 @@ class SSHPluginError(sk_classes.SKCommandError):
 
 
 class SSHPlugin(sk_classes.SKCommandPlugin):
-    _commands = {'ssh': {'requires_hostlist': True},
-                 'pssh': {'requires_hostlist': True},
-                 'dist': {'requires_hostlist': True},
-                 'gather': {'requires_hostlist': True}}
+    _commands = {'ssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh host by host. Arguments: <host expression> <command to execute>\n'},
+                 'pssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh in parallel fashion. Arguments: <host expression> <command to execute>\n'},
+                 'dist': {'requires_hostlist': True, 'help': 'Distributes a file among hosts over ssh. Arguments: <host expression> <file to distribute> <destination path>\n'
+                                                             'By default, destination path is . (cwd)\n'},
+                 'gather': {'requires_hostlist': True, 'help': 'Gathers remote files on local host over ssh. Arguments: <host expression> <file to gather> <destination path>\n'
+                                                               'By default, destination path is . (cwd). gather adds a suffix to each file gathered to distinguish one file\n'
+                                                               ' from another'}}
     _commands_help_message = "SSH plugin:\nssh - execute a command over ssh host by host (cmd)\n" \
                              "pssh - parallel exec (cmd)\n" \
                              "dist - distribute " \
@@ -343,8 +362,9 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
 #                self._pool.join()
                 self._results = [result.get(0xFFFF) for result in self._pool_results]
             except KeyboardInterrupt:
-                print("Ctrl-C caught!")
-                sys.exit(2)
+                #print("Ctrl-C caught!")
+                raise SSHPluginError("Ctrl-C caught!")
+                #sys.exit(2)
 
         elif self._command == "ssh":  # sequential
             counter = 1
@@ -358,24 +378,30 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
 
                     counter += 1
             except KeyboardInterrupt:
-                print("Ctrl-C caught!")
-                sys.exit(2)
+                raise SSHPluginError("Ctrl-C caught!")
+                #print("Ctrl-C caught!")
+                #sys.exit(2)
 
         elif self._command == "dist":
             self._pool = multiprocessing.Pool(processes=self._threads_count)
-            self._pool_results = [self._pool.apply_async(paramiko_scp_thread_run, (paramiko_thread_config, self._source,
+            self._pool_results = [self._pool.apply_async(paramiko_scp_thread_run_keyboard_interrupt_wrapper, (paramiko_thread_config, self._source,
                                                                                    self._dest))
                                   for paramiko_thread_config in self._paramiko_configs]
 
             self._pool.close()
             self._pool.join()
+            try:
+                self._results = [result.get() for result in self._pool_results]
+            except KeyboardInterrupt:
+                #print("Ctrl-C caught!")
+                raise SSHPluginError("Ctrl-C caught!")
+                #sys.exit(2)
 
-            self._results = [result.get() for result in self._pool_results]
         elif self._command == "gather":
             os.chdir(self._dest)
 
             self._pool = multiprocessing.Pool(processes=self._threads_count)
-            self._pool_results = [self._pool.apply_async(paramiko_scp_gather_thread_run, (paramiko_thread_config,
+            self._pool_results = [self._pool.apply_async(paramiko_scp_gather_thread_run_keyboard_interrupt_wrapper, (paramiko_thread_config,
                                                                                           self._source,
                                                                                           self._dest))
                                   for paramiko_thread_config in self._paramiko_configs]
@@ -383,7 +409,13 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
             self._pool.close()
             self._pool.join()
 
-            self._results = [result.get() for result in self._pool_results]
+            try:
+                self._results = [result.get() for result in self._pool_results]
+            except KeyboardInterrupt:
+                #print("Ctrl-C caught!")
+                raise SSHPluginError("Ctrl-C caught!")
+                #sys.exit(2)
+
 
         self._print_results_summary()
 

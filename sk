@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 sk - A tiny extendable utility for running commands against multiple hosts.
 

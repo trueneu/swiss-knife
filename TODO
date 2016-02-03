@@ -7,4 +7,13 @@
 24. write own setup.py files for all the plugins? omg.
 25. write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
 26. make an interactive shell mode (pypsi?)
+26.1 parsers list() -> dict()
+26.2 get dr command up and running, with displaying help
+26.3 get parsers up and running, with help and such
+26.4 rewrite sk-ssh output to work properly in shell mode
+26.5 rewrite examples
+26.6 add individual help text for each command and parser bundled
+26.7 fix double command invocation
+26.8 rewrite sk-ssh ctrl+c exiting/catching
 27. add get/set/destroy Foreman parameters commands
+28. fix passing wrong host to foreman getcls, try another cmds
