@@ -3,12 +3,45 @@ from pypsi.core import Command
 import sys
 import logging
 import sk_classes
+import sk_exceptions
 from pypsi.commands.exit import ExitCommand
 from pypsi.commands.pwd import PwdCommand
 from pypsi.commands.chdir import ChdirCommand
 from pypsi.commands.system import SystemCommand
 import os
-#from pypsi.plugins.history import HistoryCommand, HistoryPlugin
+from pypsi.plugins.history import HistoryCommand, HistoryPlugin
+from pypsi.core import Plugin
+from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
+
+class SKShellCmdlinePP(Plugin):
+    def __init__(self, preprocess=80, postprocess=None, **kwargs):
+        super(SKShellCmdlinePP, self).__init__(preprocess=preprocess,
+                                               postprocess=postprocess, **kwargs)
+
+    def setup(self, shell):
+        pass
+
+    def on_tokenize(self, shell, tokens, origin):
+        if origin != 'input':
+            return tokens
+
+        result = []
+        i = 0
+        for (i, token) in enumerate(tokens):
+            if isinstance(token, StringToken):
+                if token.quote:
+                    result.append(StringToken(i, "{quote}{s}{quote}".format(
+                        quote=token.quote or '',
+                        s=token.text.replace('\\', '\\\\\\')), quote=None))
+                else:
+                    result.append(StringToken(i, "{quote}{s}{quote}".format(
+                        quote=token.quote or '',
+                        s=token.text), quote=None))
+            else:
+                result.append(token)
+
+        return result
+
 
 help_command_name = 'help'
 sk_shell_prompt = "sk> "
@@ -38,9 +71,11 @@ class SKCommand(Command):
         sys.stderr.write(diemsg + '\n')
 
     def run(self, shell, args):
-        self._hostlist = ""
-        self._command_args = list()
-        self._expanded_hostlist = list()
+        #DEBUG PRINT
+        #print(args)
+        #self._hostlist = ""
+        #self._command_args = list()
+        #self._expanded_hostlist = list()
 
         self._cwd = os.getcwd()
 
@@ -58,6 +93,8 @@ class SKCommand(Command):
             except sk_classes.SKParsingError as e:
                 self._die("Parser error: {0}".format(str(e)))
                 return
+            except sk_exceptions.ExpandingHostlistError as e:
+                self._die("Expanding hostlist expression error: {0}".format(str(e)))
 
         else:
             self._command_args = args
@@ -80,15 +117,15 @@ class SKCommand(Command):
             self._die("Command error: {0}".format(str(e)))
 
 
-
 class SKShell(Shell):
     exit_cmd = ExitCommand()
     pwd_cmd = PwdCommand()
     cd_cmd = SKChdirCommand()
     system_cmd = SystemCommand(name='sys')
-    #history_cmd = HistoryCommand()
-    #history_plugin = HistoryPlugin()
+    sk_shell_preprocessor_plugin = SKShellCmdlinePP()
     help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd}
+    history_plugin = HistoryPlugin()
+    history_command = HistoryCommand()
 
     def __init__(self, sk_instance):
         try:
@@ -104,6 +141,7 @@ class SKShellPrepare:
         for command_name, command_module in sk_instance._available_commands.items():
             setattr(SKShell, command_name, SKCommand(command_name, 'no help yet', command_module, sk_instance))
         setattr(SKShell, help_command_name, SKShellHelp(sk_instance))
+
 
 class SKShellHelp(Command):
     def __init__(self, sk_instance):

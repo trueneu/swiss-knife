@@ -26,7 +26,7 @@ except SyntaxError:
 class SwissKnife(object):
     _version = "0.03a"
 
-    _environment = "testing"
+    _environment = "production"
     _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
@@ -35,6 +35,8 @@ class SwissKnife(object):
         _sk_config_path = "sk-private.ini"
 
     def __init__(self, **kwargs):
+        # DEBUG PRINT
+        #print(sys.argv)
         for k, v in kwargs.items():
             setattr(self, "_{0}".format(k), v)
 
@@ -213,8 +215,8 @@ class SwissKnife(object):
 
         result['command_args'] = args.command_args
 
-#        #DEBUG PRINT
-#        print(result['command_args'])
+        #DEBUG PRINT
+        #print(result['command_args'])
 
         return result
 
@@ -287,8 +289,9 @@ class SwissKnife(object):
     def _expand_hostlist(self):
         expanded_hostlist = list()  # expanded
 
-        #if self._hostlist[0] == "'" and self._hostlist[:-1] == "'":
-        #    self._hostlist = self._hostlist[1:-1]
+        if (self._hostlist[0] == "'" and self._hostlist[-1] == "'") or \
+                (self._hostlist[0] == '"' and self._hostlist[-1] == '"'):
+            self._hostlist = self._hostlist[1:-1]
 
         # yeah, maybe we'll need that dirty hack in the future
 
@@ -307,7 +310,7 @@ class SwissKnife(object):
 
             if hostgroup_modifier not in self._available_parsers:
                 if not hostgroup_modifier.isalpha():
-                    self._die("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
+                    raise sk_exceptions.ExpandingHostlistError("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
                 else:  # hostgroup is a host or a regex, not a group
                     escaped_hostgroup = self._escape_unsafe_characters(hostgroup)
                     self._die_if_unsafe_characters(escaped_hostgroup)
@@ -322,11 +325,11 @@ class SwissKnife(object):
                 try:
                     hostlist_addition = obj.parse()
                     if len(hostlist_addition) == 0:
-                        self._die("Parser {0} didn't return any hosts for hostgroup {1}".format(
+                        raise sk_exceptions.ExpandingHostlistError("Parser {0} didn't return any hosts for hostgroup {1}".format(
                             parser.__name__, hostgroup_remainder
                         ))
                 except sk_classes.SKParsingError as e:
-                    self._die("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
+                    raise sk_exceptions.ExpandingHostlistError("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
 
             if not negation:
                 # don't add host twice
@@ -349,7 +352,10 @@ class SwissKnife(object):
             sys.exit(exit_status)
 
         if self._command_requires_hostlist:
-            expanded_hostlist = self._expand_hostlist()
+            try:
+                expanded_hostlist = self._expand_hostlist()
+            except sk_exceptions.ExpandingHostlistError as e:
+                self._die(str(e))
         else:
             expanded_hostlist = list()
 

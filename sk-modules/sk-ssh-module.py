@@ -148,7 +148,7 @@ def paramiko_exec_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, 
 
 
 def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
-    ##DEBUG PRINT
+    #DEBUG PRINT
     #print(cmd)
 
     connect_error_exit_code = 254
