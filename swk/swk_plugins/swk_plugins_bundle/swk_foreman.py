@@ -1,24 +1,24 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../sk for more information on License and contacts
+see ../swk for more information on License and contacts
 """
 
-from sk import sk_classes
+from swk import swk_classes
 from foreman.client import Foreman, ForemanException
-from sk.sk_helper_functions import SKHelperFunctions
+from swk.swk_helper_functions import SWKHelperFunctions
 import sys
 import os
 import datetime
 
-class ForemanError(sk_classes.SKParsingError, sk_classes.SKCommandError):
+class ForemanError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
     def __init__(self, message):
         super(ForemanError, self).__init__(message)
 
 
-class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
+class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
     _parsers = dict()
     _parsers_help_message = ""
 
@@ -113,7 +113,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         try:
             for host in self._hostlist_def_domain:
                 self._fapi.hosts.update(host={'environment_id': environment_id}, id=host)
-                SKHelperFunctions.print_line_with_host_prefix("done", host)
+                SWKHelperFunctions.print_line_with_host_prefix("done", host)
             self._kill_cache()
         except Exception as e:
             raise ForemanError(str(e))
@@ -122,14 +122,14 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         hosts_info = self._get_all_hosts_info()
         filtered_hosts_info = [x for x in hosts_info if x['name'] in self._hostlist_def_domain]
         for host_info in filtered_hosts_info:
-            SKHelperFunctions.print_line_with_host_prefix(host_info['environment_name'],
+            SWKHelperFunctions.print_line_with_host_prefix(host_info['environment_name'],
                                                           host_info['name'])
 
     def _get_environment_id(self, environment):
         try:
             return self._fapi.environments.show(id=environment)['id']
         except Exception as e:
-            raise sk_classes.SKCommandError(str(e))
+            raise swk_classes.SWKCommandError(str(e))
 
     def _setenv(self):
         environment = self._command_args[0]
@@ -141,7 +141,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         for host_info in hosts_info:
             try:
                 for puppet_class in host_info['all_puppetclasses']:
-                    SKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
+                    SWKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
                                                                   host_info['name'])
             except KeyError:
                 raise ForemanError("Foreman info about host says it has no 'all_puppetclasses' field")
@@ -180,14 +180,14 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         class_ids_list = self._form_class_ids_list(classes_short_info)
         for host in self._hostlist_def_domain:
             self._fapi.hosts.update(host={'puppetclass_ids': class_ids_list}, id=host)
-            SKHelperFunctions.print_line_with_host_prefix("done", host)
+            SWKHelperFunctions.print_line_with_host_prefix("done", host)
 
     def _rm_classes_from_hosts(self, classes_short_info):
         class_ids_list = self._form_class_ids_list(classes_short_info)
         for host in self._hostlist_def_domain:
             for class_id in class_ids_list:
                 self._fapi.hosts.host_classes_host_id_puppetclass_destroyids(host_id=host, id=class_id)
-            SKHelperFunctions.print_line_with_host_prefix("done", host)
+            SWKHelperFunctions.print_line_with_host_prefix("done", host)
 
     def _get_hostgroups_short_info(self):
         result = list()
@@ -200,7 +200,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         class_ids_list = self._form_class_ids_list(classes_short_info)
         for hostgroup_info in hostgroups_short_info:
             self._fapi.hostgroups.update(hostgroup={'puppetclass_ids': class_ids_list}, id=hostgroup_info['id'])
-            SKHelperFunctions.print_line_with_host_prefix("done", hostgroup_info['name'])
+            SWKHelperFunctions.print_line_with_host_prefix("done", hostgroup_info['name'])
 
     def _rm_classes_from_groups(self, classes_short_info):
         hostgroups_short_info = self._get_hostgroups_short_info()
@@ -209,7 +209,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
             for class_id in class_ids_list:
                 self._fapi.hostgroups.hostgroup_classes_hostgroup_id_puppetclass_destroyids(hostgroup_id=hostgroup_info['id'],
                                                                                   id=class_id)
-            SKHelperFunctions.print_line_with_host_prefix("done", hostgroup_info['name'])
+            SWKHelperFunctions.print_line_with_host_prefix("done", hostgroup_info['name'])
 
     def _addcls(self):
         classes_short_info = self._get_classes_short_info()
@@ -229,7 +229,7 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         for hostgroup_info in hostgroups_info:
             try:
                 for puppet_class in hostgroup_info['puppetclasses']:
-                    SKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
+                    SWKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
                                                                   hostgroup_info['name'])
             except KeyError:
                 raise ForemanError("Foreman info about group says it has no 'puppetclasses' field")

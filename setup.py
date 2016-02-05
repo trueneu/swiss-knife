@@ -3,16 +3,16 @@
 from distutils.core import setup
 
 version = {}
-with open('sk/version.py') as f:
+with open('swk/version.py') as f:
     exec(f.read(), version)
 
-setup(name='sk',
+setup(name='swk',
       version=version['__version__'],
       description='Extendable command line utility for sysadmins',
       author="Pavel Gurkov",
       author_email="true.neu@gmail.com",
       url='https://github.com/trueneu/swiss-knife',
-      packages=['sk'],
+      packages=['swk'],
       license='GPLv3',
       platforms='Posix; MacOS X',
       classifiers=[
@@ -20,7 +20,7 @@ setup(name='sk',
             'Environment :: Console',
             'Intended Audience :: Developers',
             'Intended Audience :: System Administrators',
-            'Intended Audience :: End Users/Desktop',
+            'Intended Audience :: End Users/Deswktop',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 2.7',
@@ -37,5 +37,5 @@ setup(name='sk',
           'paramiko>=1.16.0',
           'scp>=0.10.2'
       ],
-      long_description='Please use pip install sk -r requirements_all.txt to get all plugins up and running'
+      long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running'
       )

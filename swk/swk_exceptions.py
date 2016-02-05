@@ -1,9 +1,9 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see sk for more information on License and contacts
+see swk for more information on License and contacts
 """
 
 

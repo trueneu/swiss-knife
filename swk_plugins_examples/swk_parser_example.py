@@ -1,15 +1,15 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../../sk for more information on License and contacts
+see ../../swk for more information on License and contacts
 """
 
-from sk import sk_classes
+from swk import swk_classes
 
 
-class ParserPluginExample(sk_classes.SKParserPlugin):
+class ParserPluginExample(swk_classes.SWKParserPlugin):
     _parsers = ['^']
     _parsers_help_message = "^testparser2\n"
 

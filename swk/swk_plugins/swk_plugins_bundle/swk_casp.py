@@ -1,23 +1,23 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../sk for more information on License and contacts
+see ../swk for more information on License and contacts
 """
 
-from sk import sk_classes
+from swk import swk_classes
 import requests
 import sys
 import logging
 
 
-class CASPError(sk_classes.SKParsingError, sk_classes.SKCommandError):
+class CASPError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
     def __init__(self, message):
         super(CASPError, self).__init__(message)
 
 
-class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
+class CaspPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
     _parsers = {'%': {'help': 'Expands casp hostgroups. Has a special keyword ALL for all hosts can be found\n'}}
     _parsers_help_message = "%casp_hostgroup, %ALL for all hosts\n"
 

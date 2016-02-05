@@ -1,23 +1,23 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../sk for more information on License and contacts
+see ../swk for more information on License and contacts
 """
 
-from sk import sk_classes
+from swk import swk_classes
 import pyzabbix
 import sys
 import logging
 
 
-class ZabbixError(sk_classes.SKCommandError, sk_classes.SKParsingError):
+class ZabbixError(swk_classes.SWKCommandError, swk_classes.SWKParsingError):
     def __init__(self, message):
         super(ZabbixError, self).__init__(message)
 
 
-class ZabbixPlugin(sk_classes.SKCommandPlugin, sk_classes.SKParserPlugin):
+class ZabbixPlugin(swk_classes.SWKCommandPlugin, swk_classes.SWKParserPlugin):
     _commands = {'lszbx': {'requires_hostlist': False, 'help': 'Lists zabbix hostgroups. Arguments: None\n' }}
     _commands_help_message = "Zabbix plugin:\n" \
                              "lszbx - list zabbix hostgroups\n\n"

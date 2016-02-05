@@ -1,15 +1,15 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../../sk for more information on License and contacts
+see ../../swk for more information on License and contacts
 """
 
-from sk import sk_classes
+from swk import swk_classes
 
 
-class CommandPluginExample(sk_classes.SKCommandPlugin):
+class CommandPluginExample(swk_classes.SWKCommandPlugin):
     _commands = {'cmdexample2': {'requires_hostlist': True}}
     _commands_help_message = "cmdexample2 - do nothing\n"
 

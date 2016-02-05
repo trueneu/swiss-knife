@@ -1,14 +1,14 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see sk for more information on License and contacts
+see swk for more information on License and contacts
 """
 import abc
 
 
-class SKPlugin():
+class SWKPlugin():
     __metaclass__  = abc.ABCMeta
 
     def __init__(self, *args, **kwargs):
@@ -17,12 +17,12 @@ class SKPlugin():
         """fill in everything"""
 
 
-class SKCommandPlugin(SKPlugin):
+class SWKCommandPlugin(SWKPlugin):
     _commands = dict()
     _commands_help_message = ""
 
     def __init__(self, *args, **kwargs):
-        super(SKCommandPlugin, self).__init__(*args, **kwargs)
+        super(SWKCommandPlugin, self).__init__(*args, **kwargs)
 
     @classmethod
     def get_commands(cls):
@@ -50,17 +50,17 @@ class SKCommandPlugin(SKPlugin):
         the config file section MUST be named the same as class
 
         special variables that might be useful:
-          self._sk_dir, self._sk_path - directory and invokation path to main executable
+          self._swk_dir, self._swk_path - directory and invokation path to main executable
           self._cwd - current working directory at the time main executable was invoked
           self._cache_folder - a directory where you can store anything related to your module work"""
 
 
-class SKParserPlugin(SKPlugin):
+class SWKParserPlugin(SWKPlugin):
     _parsers_help_message = ""
     _parsers = dict()
 
     def __init__(self, *args, **kwargs):
-        super(SKParserPlugin, self).__init__(*args, **kwargs)
+        super(SWKParserPlugin, self).__init__(*args, **kwargs)
 
     @classmethod
     def get_parsers(cls):
@@ -84,13 +84,13 @@ class SKParserPlugin(SKPlugin):
         return cls._parsers_help_message
 
 
-class SKParsingError(Exception):
+class SWKParsingError(Exception):
     def __init__(self, message):
-        super(SKParsingError, self).__init__(message)
+        super(SWKParsingError, self).__init__(message)
     """raise this if there's error in parsing"""
 
 
-class SKCommandError(Exception):
+class SWKCommandError(Exception):
     def __init__(self, message):
-        super(SKCommandError, self).__init__(message)
+        super(SWKCommandError, self).__init__(message)
     """raise this if there's unrecoverable error in command execution"""
