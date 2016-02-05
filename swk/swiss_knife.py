@@ -48,6 +48,8 @@ class SwissKnife(object):
         self._config = self._read_config()
         self._logging_init()
 
+        self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins").split()]
+
         self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].pop("cache_folder",
                                                                                                   "~/.swk")))
         self._cache_folder_init()
@@ -74,6 +76,8 @@ class SwissKnife(object):
 
             self._command_args = self._args["command_args"]
             self._hostlist = self._args["hostlist"]
+
+
 
     def _logging_init(self):
         loglevel_string = self._config["Main"].pop("loglevel", "warning")
@@ -124,6 +128,8 @@ class SwissKnife(object):
         """import all the plugin modules and put them into list"""
 
         for module_filename in module_filenames:
+            if module_filename in self._disabled_plugins:
+                continue
             module_name, _, _ = module_filename.rpartition('.py')
             module_full_name = "{0}.{1}".format(self._swk_modules_dir, module_name)
             try:
