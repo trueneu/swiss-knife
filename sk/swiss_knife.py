@@ -9,20 +9,19 @@ see sk for more information on License and contacts
 import logging
 import os
 import glob
-import sk_classes
+from sk import sk_classes
 import inspect
-import sk_exceptions
+from sk import sk_exceptions
 import argparse
 import configparser
 import sys
 import exrex
 
-
 class SwissKnife(object):
     _version = "0.02a"
 
     _environment = "production"
-    _sk_modules_dir = "sk-modules"
+    _sk_modules_dir = "sk/sk_plugins"
 
     if _environment == "production":
         _sk_config_path = "sk.ini"
@@ -36,7 +35,7 @@ class SwissKnife(object):
         self._config = self._read_config()
         self._logging_init()
 
-        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].pop("cache_folder",
+        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].get("cache_folder",
                                                                                                   "~/.sk")))
         self._cache_folder_init()
 
@@ -108,7 +107,7 @@ class SwissKnife(object):
             module_name, _, _ = module_filename.rpartition('.py')
             module_full_name = "{0}.{1}".format(self._sk_modules_dir, module_name)
             try:
-                module = __import__(module_full_name, fromlist=[self._sk_modules_dir])
+                module = __import__(module_full_name.replace('/', '.'), fromlist=[self._sk_modules_dir.replace('/', '.')])
             except ImportError as e:
                 self._die("Couldn't import module {0}: {1}.".format(module_full_name, str(e)))
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)

@@ -6,9 +6,9 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see ../sk for more information on License and contacts
 """
 
-import sk_classes
+from sk import sk_classes
 from foreman.client import Foreman, ForemanException
-from sk_helper_functions import SKHelperFunctions
+from sk.sk_helper_functions import SKHelperFunctions
 import sys
 import os
 import datetime

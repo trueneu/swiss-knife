@@ -21,7 +21,7 @@ mailto: true.neu@gmail.com
 """
 
 import os
-import swiss_knife
+from sk import swiss_knife
 
 
 def main():

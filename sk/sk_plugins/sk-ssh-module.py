@@ -7,7 +7,7 @@ see ../sk for more information on License and contacts
 """
 
 
-import sk_classes
+from sk import sk_classes
 import paramiko
 import os
 import multiprocessing
