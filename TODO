@@ -7,4 +7,12 @@
 24. write own setup.py files for all the plugins? omg.
 25. write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
 26. make an interactive shell mode (pypsi?)
+26.5 rewrite examples
+26.8 rewrite sk-ssh ctrl+c exiting/catching if needed (it's unclear if it's needed)
 27. add get/set/destroy Foreman parameters commands
+28. fix passing wrong host to foreman getcls, try another cmds
+29. dig into argparse vs shlex to avoid needless quote escaping -- Adam Meily, pypsi's author, seems to be willing to add such a feature.
+    I don't think it's possible with shlex or anything, sadly, as the arguments in sys.argv are already un-quoted
+30. remove debug prints from swiss_knife, sk-ssh
+31. clean up sk-shell and pypsi sources, remove hacks and debug outputs
+32. check sk-shell with pp hack: hostlists surrounded with quotes; replace backslash only if in quotes

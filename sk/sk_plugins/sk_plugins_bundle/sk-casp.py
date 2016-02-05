@@ -18,10 +18,10 @@ class CASPError(sk_classes.SKParsingError, sk_classes.SKCommandError):
 
 
 class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
-    _parsers = ['%']
+    _parsers = {'%': {'help': 'Expands casp hostgroups. Has a special keyword ALL for all hosts can be found\n'}}
     _parsers_help_message = "%casp_hostgroup, %ALL for all hosts\n"
 
-    _commands = {'lscasp': {'requires_hostlist': False}}
+    _commands = {'lscasp': {'requires_hostlist': False, 'help': 'List all casp hostgroups. Arguments: None\n'}}
     _commands_help_message = "Casp plugin:\nlscasp - list casp hostgroups\n\n"
 
     _casp_api_hostgroups_groupnames_uri = "hostgroups?groupNames=true"
@@ -52,7 +52,7 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         url = "{0}/{1}".format(self._casp_api_url, self._casp_api_hostgroup_all_hosts_uri)
 
         data = self._get_data(url)
-        for line in data.content.split('\n'):
+        for line in data.content.decode().split('\n'):
             parts = line.split()
             if len(parts) == 3:
                 host = parts[2]
@@ -68,7 +68,7 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
                                    self._hostgroup)
 
         data = self._get_data(url)
-        for line in data.content.split('\n'):
+        for line in data.content.decode().split('\n'):
             parts = line.split()
             if len(parts) == 2:
                 host = parts[0]
@@ -83,7 +83,7 @@ class CaspPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
         url = "{0}/{1}".format(self._casp_api_url, self._casp_api_hostgroups_groupnames_uri)
 
         data = self._get_data(url)
-        for line in data.content.split('\n'):
+        for line in data.content.decode().split('\n'):
             parts = line.split()
             if len(parts) == 1:
                 group = parts[0]

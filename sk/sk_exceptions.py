@@ -16,3 +16,7 @@ class OverriddenParserError(Exception):
     def __init__(self, message):
         super(OverriddenParserError, self).__init__(message)
 
+
+class ExpandingHostlistError(Exception):
+    def __init__(self, message):
+        super(ExpandingHostlistError, self).__init__(message)

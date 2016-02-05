@@ -9,19 +9,25 @@ see sk for more information on License and contacts
 import logging
 import os
 import glob
-from sk import sk_classes
+import sk_classes
 import inspect
-from sk import sk_exceptions
+import sk_exceptions
 import argparse
 import configparser
 import sys
 import exrex
 
+shell_mode_off = False
+try:
+    import sk_shell
+except SyntaxError:
+    shell_mode_off = True
+
 class SwissKnife(object):
-    _version = "0.02a"
+    _version = "0.03a"
 
     _environment = "production"
-    _sk_modules_dir = "sk/sk_plugins"
+    _sk_modules_dir = "sk-modules"
 
     if _environment == "production":
         _sk_config_path = "sk.ini"
@@ -29,13 +35,15 @@ class SwissKnife(object):
         _sk_config_path = "sk-private.ini"
 
     def __init__(self, **kwargs):
+        # DEBUG PRINT
+        #print(sys.argv)
         for k, v in kwargs.items():
             setattr(self, "_{0}".format(k), v)
 
         self._config = self._read_config()
         self._logging_init()
 
-        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].get("cache_folder",
+        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].pop("cache_folder",
                                                                                                   "~/.sk")))
         self._cache_folder_init()
 
@@ -43,17 +51,24 @@ class SwissKnife(object):
         self._available_commands, self._available_parsers = self._get_available_commands_and_parsers()
         self._commands_help_message, self._parsers_help_message, \
             self._commands_help_string, self._parsers_help_string = self._form_commands_and_parsers_help()
+
+        self._config = self._add_empty_sections_to_config()  # now that we know what's imported
+
         self._args = self._parse_args()
-        self._command_executer_class = self._find_command_executer_class()
-        self._command_executer_name = self._command_executer_class.__name__
-        self._command_requires_hostlist = self._command_executer_class.requires_hostlist(self._args["command"])
-        self._args = self._arguments_magic()
 
         self._command = self._args["command"]
-        self._command_args = self._args["command_args"]
-        self._hostlist = self._args["hostlist"]
 
-        self._config = self._add_empty_sections_to_config()
+        if self._command == 'shell':
+            pass
+        else:
+            """almost all this stuff below we do based on arguments we got so it gotta be excluded from shell variant"""
+            self._command_executer_class = self._find_command_executer_class()
+            self._command_executer_name = self._command_executer_class.__name__
+            self._command_requires_hostlist = self._command_executer_class.requires_hostlist(self._args["command"])
+            self._args = self._arguments_magic()
+
+            self._command_args = self._args["command_args"]
+            self._hostlist = self._args["hostlist"]
 
     def _logging_init(self):
         loglevel_string = self._config["Main"].pop("loglevel", "warning")
@@ -107,7 +122,7 @@ class SwissKnife(object):
             module_name, _, _ = module_filename.rpartition('.py')
             module_full_name = "{0}.{1}".format(self._sk_modules_dir, module_name)
             try:
-                module = __import__(module_full_name.replace('/', '.'), fromlist=[self._sk_modules_dir.replace('/', '.')])
+                module = __import__(module_full_name, fromlist=[self._sk_modules_dir])
             except ImportError as e:
                 self._die("Couldn't import module {0}: {1}.".format(module_full_name, str(e)))
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
@@ -153,8 +168,8 @@ class SwissKnife(object):
         return available_commands, available_parsers
 
     def _form_commands_and_parsers_help(self):
-        commands_help_message = ""
-        parsers_help_message = ""
+        commands_help_message = "Commands help:\n"
+        parsers_help_message = "Parsers help:\n"
         commands_help_string = ""
         parsers_help_string = ""
 
@@ -178,14 +193,15 @@ class SwissKnife(object):
         return commands_help_message, parsers_help_message, commands_help_string, parsers_help_string
 
     def _parse_args(self):
-        argparse_epilog = 'Commands help:\n{0}'.format(self._commands_help_message) + "\n" + \
-                          "Parsers help:\n{0}".format(self._parsers_help_message)
+        argparse_epilog = '{0}'.format(self._commands_help_message) + "\n" + \
+                          "{0}".format(self._parsers_help_message)
 
         result = dict()
 
         argparser = argparse.ArgumentParser(description="Swiss knife for doing everything in your infrastructure.",
                                             epilog=argparse_epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
-        argparser.add_argument('command', help='command. Valid choices are: {0}'.format(self._commands_help_string))
+        argparser.add_argument('command', help='command. Valid choices are: {0}'.format(self._commands_help_string),
+                               default='shell', nargs='?', type=str)
         argparser.add_argument('hostlist', help='hosts and/or hostgroups for command to apply to, divided by commas (,). '
                                                 'Valid hostgroup modifiers are: {0}'.format(self._parsers_help_string),
                                nargs='?')
@@ -199,8 +215,8 @@ class SwissKnife(object):
 
         result['command_args'] = args.command_args
 
-#        #DEBUG PRINT
-#        print(result['command_args'])
+        #DEBUG PRINT
+        #print(result['command_args'])
 
         return result
 
@@ -273,8 +289,9 @@ class SwissKnife(object):
     def _expand_hostlist(self):
         expanded_hostlist = list()  # expanded
 
-        #if self._hostlist[0] == "'" and self._hostlist[:-1] == "'":
-        #    self._hostlist = self._hostlist[1:-1]
+        if (self._hostlist[0] == "'" and self._hostlist[-1] == "'") or \
+                (self._hostlist[0] == '"' and self._hostlist[-1] == '"'):
+            self._hostlist = self._hostlist[1:-1]
 
         # yeah, maybe we'll need that dirty hack in the future
 
@@ -293,7 +310,7 @@ class SwissKnife(object):
 
             if hostgroup_modifier not in self._available_parsers:
                 if not hostgroup_modifier.isalpha():
-                    self._die("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
+                    raise sk_exceptions.ExpandingHostlistError("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
                 else:  # hostgroup is a host or a regex, not a group
                     escaped_hostgroup = self._escape_unsafe_characters(hostgroup)
                     self._die_if_unsafe_characters(escaped_hostgroup)
@@ -308,11 +325,11 @@ class SwissKnife(object):
                 try:
                     hostlist_addition = obj.parse()
                     if len(hostlist_addition) == 0:
-                        self._die("Parser {0} didn't return any hosts for hostgroup {1}".format(
+                        raise sk_exceptions.ExpandingHostlistError("Parser {0} didn't return any hosts for hostgroup {1}".format(
                             parser.__name__, hostgroup_remainder
                         ))
                 except sk_classes.SKParsingError as e:
-                    self._die("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
+                    raise sk_exceptions.ExpandingHostlistError("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
 
             if not negation:
                 # don't add host twice
@@ -325,8 +342,20 @@ class SwissKnife(object):
         return sorted(expanded_hostlist)
 
     def run(self):
+        if self._command == 'shell':
+            if shell_mode_off:
+                self._die("Please update python to python3+ to run shell mode")
+            # this is a very special case
+            sk_shell.SKShellPrepare(self)
+            shell = sk_shell.SKShell(self)
+            exit_status = shell.cmdloop()
+            sys.exit(exit_status)
+
         if self._command_requires_hostlist:
-            expanded_hostlist = self._expand_hostlist()
+            try:
+                expanded_hostlist = self._expand_hostlist()
+            except sk_exceptions.ExpandingHostlistError as e:
+                self._die(str(e))
         else:
             expanded_hostlist = list()
 
