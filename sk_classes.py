@@ -29,8 +29,12 @@ class SKCommandPlugin(SKPlugin):
         return cls._commands.keys()
 
     @classmethod
+    def get_command_help(cls, command):
+        return cls._commands.get(command).get('help', 'no help provided\n')
+
+    @classmethod
     def requires_hostlist(cls, command):
-        return cls._commands.pop(command).pop('requires_hostlist', True)
+        return cls._commands.get(command).get('requires_hostlist', True)
 
     @classmethod
     def commands_help(cls):
@@ -53,14 +57,18 @@ class SKCommandPlugin(SKPlugin):
 
 class SKParserPlugin(SKPlugin):
     _parsers_help_message = ""
-    _parsers = []
+    _parsers = dict()
 
     def __init__(self, *args, **kwargs):
         super(SKParserPlugin, self).__init__(*args, **kwargs)
 
     @classmethod
     def get_parsers(cls):
-        return cls._parsers
+        return cls._parsers.keys()
+
+    @classmethod
+    def get_parser_help(cls, parser):
+        return cls._parsers.get(parser).get('help', 'no help provided\n')
 
     @abc.abstractmethod
     def parse(self):

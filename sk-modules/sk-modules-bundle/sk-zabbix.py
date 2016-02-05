@@ -18,10 +18,10 @@ class ZabbixError(sk_classes.SKCommandError, sk_classes.SKParsingError):
 
 
 class ZabbixPlugin(sk_classes.SKCommandPlugin, sk_classes.SKParserPlugin):
-    _commands = {'lszbx': {'requires_hostlist': False}}
+    _commands = {'lszbx': {'requires_hostlist': False, 'help': 'Lists zabbix hostgroups. Arguments: None\n' }}
     _commands_help_message = "Zabbix plugin:\n" \
                              "lszbx - list zabbix hostgroups\n\n"
-    _parsers = ['^']
+    _parsers = {'^': {'help': 'expands zabbix hostgroups. Has a special keyword ALL for all hosts can be found.\n'}}
     _parsers_help_message = "^zabbix_hostgroup, ^ALL for all hosts\n"
 
     def __init__(self,  *args, **kwargs):

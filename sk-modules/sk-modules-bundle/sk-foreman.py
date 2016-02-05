@@ -19,14 +19,18 @@ class ForemanError(sk_classes.SKParsingError, sk_classes.SKCommandError):
 
 
 class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
-    _parsers = []
+    _parsers = dict()
     _parsers_help_message = ""
 
-    _commands = {'getenv': {'requires_hostlist': True}, 'setenv': {'requires_hostlist': True},
-                 'getcls': {'requires_hostlist': True}, 'addcls': {'requires_hostlist': True},
-                 'rmcls': {'requires_hostlist': True},
-                 'getgcls': {'requires_hostlist': True}, 'addgcls': {'requires_hostlist': True},
-                 'rmgcls': {'requires_hostlist': True}, 'lscls': {'requires_hostlist': False}}
+    _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. Arguments: <host expression>\n'},
+                 'setenv': {'requires_hostlist': True, 'help': 'Sets environment for hosts. Arguments: <host expression> <environment name>\n'},
+                 'getcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hosts. Arguments: <host expression>\n'},
+                 'addcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hosts. Arguments: <host expression> <puppet class name(s)>\n'},
+                 'rmcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hosts. Arguments: <host expression> <puppet class name(s)>\n'},
+                 'getgcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hostgroups. Arguments: <foreman hostgroup(s)>\n'},
+                 'addgcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
+                 'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
+                 'lscls': {'requires_hostlist': False, 'help': 'Prints available puppet classes. Arguments: None\n'}}
     _commands_help_message = "Foreman plugin:\n" \
                              "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n" \
                              "getcls - get host assigned puppet classes\naddcls - adds classes to hosts (cls name[s])\n" \
@@ -141,6 +145,8 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
                                                                   host_info['name'])
             except KeyError:
                 raise ForemanError("Foreman info about host says it has no 'all_puppetclasses' field")
+            except TypeError:
+                raise ForemanError("Foreman returned nonsense. Most probably one of hosts provided doesn't exist.")
 
     def _get_classes_short_info(self):
         result = list()
@@ -227,6 +233,9 @@ class ForemanPlugin(sk_classes.SKParserPlugin, sk_classes.SKCommandPlugin):
                                                                   hostgroup_info['name'])
             except KeyError:
                 raise ForemanError("Foreman info about group says it has no 'puppetclasses' field")
+            except TypeError:
+                raise ForemanError("Foreman returned nonsense. Most probably one of hostgroups provided doesn't exist.")
+
 
     def _addgcls(self):
         classes_short_info = self._get_classes_short_info()
