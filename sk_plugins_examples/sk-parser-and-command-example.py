@@ -6,7 +6,7 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see ../../sk for more information on License and contacts
 """
 
-import sk_classes
+from sk import sk_classes
 
 
 class CommandAndParserPluginExample(sk_classes.SKCommandPlugin, sk_classes.SKParserPlugin):

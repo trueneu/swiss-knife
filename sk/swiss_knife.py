@@ -9,9 +9,9 @@ see sk for more information on License and contacts
 import logging
 import os
 import glob
-import sk_classes
+from sk import sk_classes
 import inspect
-import sk_exceptions
+from sk import sk_exceptions
 import argparse
 import configparser
 import sys
@@ -19,15 +19,20 @@ import exrex
 
 shell_mode_off = False
 try:
-    import sk_shell
+    from sk import sk_shell
 except SyntaxError:
+    logging.warning("sk shell mode has been disabled. Seems like you're using Python 2")
+    shell_mode_off = True
+except ImportError:
+    logging.warning("sk shell mode has been disabled. Seems like you haven't installed pypsi package")
     shell_mode_off = True
 
+
 class SwissKnife(object):
-    _version = "0.03a"
+    _version = "0.04a"
 
     _environment = "production"
-    _sk_modules_dir = "sk-modules"
+    _sk_modules_dir = "sk/sk_plugins"
 
     if _environment == "production":
         _sk_config_path = "sk.ini"
@@ -122,7 +127,7 @@ class SwissKnife(object):
             module_name, _, _ = module_filename.rpartition('.py')
             module_full_name = "{0}.{1}".format(self._sk_modules_dir, module_name)
             try:
-                module = __import__(module_full_name, fromlist=[self._sk_modules_dir])
+                module = __import__(module_full_name.replace('/', '.'), fromlist=[self._sk_modules_dir.replace('/', '.')])
             except ImportError as e:
                 self._die("Couldn't import module {0}: {1}.".format(module_full_name, str(e)))
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)

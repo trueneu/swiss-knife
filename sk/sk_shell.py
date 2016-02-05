@@ -2,8 +2,8 @@ from pypsi.shell import Shell
 from pypsi.core import Command
 import sys
 import logging
-import sk_classes
-import sk_exceptions
+from sk import sk_classes
+from sk import sk_exceptions
 from pypsi.commands.exit import ExitCommand
 from pypsi.commands.pwd import PwdCommand
 from pypsi.commands.chdir import ChdirCommand
