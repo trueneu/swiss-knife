@@ -52,7 +52,7 @@ class SWKCommandPlugin(SWKPlugin):
         special variables that might be useful:
           self._swk_dir, self._swk_path - directory and invokation path to main executable
           self._cwd - current working directory at the time main executable was invoked
-          self._cache_folder - a directory where you can store anything related to your module work"""
+          self._cache_directory - a directory where you can store anything related to your module work"""
 
 
 class SWKParserPlugin(SWKPlugin):

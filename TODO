@@ -15,4 +15,7 @@
     I don't think it's possible with shlex or anything, sadly, as the arguments in sys.argv are already un-quoted
 30. remove debug prints from swiss_knife, sk-ssh
 31. clean up sk-shell and pypsi sources, remove hacks and debug outputs
-32. check sk-shell with pp hack: hostlists surrounded with quotes; replace backslash only if in quotes
+33. fix config installation
+34. entry_points and pkg_resources import for possible pip plugin packages
+36. make a customizable user plugin folder config parameter and also import from there
+37. copy swk.ini to ~/.swk at install time

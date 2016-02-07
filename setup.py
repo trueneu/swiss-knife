@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+from os.path import expanduser
 
 version = {}
 with open('swk/version.py') as f:
     exec(f.read(), version)
+
+user_home = expanduser("~")
 
 setup(name='swk',
       version=version['__version__'],
@@ -12,7 +15,7 @@ setup(name='swk',
       author="Pavel Gurkov",
       author_email="true.neu@gmail.com",
       url='https://github.com/trueneu/swiss-knife',
-      packages=['swk'],
+      packages=find_packages(),
       license='GPLv3',
       platforms='Posix; MacOS X',
       classifiers=[
@@ -37,5 +40,13 @@ setup(name='swk',
           'paramiko>=1.16.0',
           'scp>=0.10.2'
       ],
-      long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running'
+      long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running',
+      entry_points={
+          'console_scripts': [
+              'swk = swk.swk:main'
+          ],
+      },
+      data_files=[
+          ('{0}/.swk'.format(user_home), ['swk.ini'])
+      ]
       )

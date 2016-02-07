@@ -28,8 +28,8 @@ def main():
     cwd = os.getcwd()
     swk_dir = os.path.dirname(os.path.abspath(__file__))
     swk_path = __file__
-    swk = swiss_knife.SwissKnife(cwd=cwd, swk_dir=swk_dir, swk_path=swk_path)
-    swk.run()
+    swk_instance = swiss_knife.SwissKnife(cwd=cwd, swk_dir=swk_dir, swk_path=swk_path)
+    swk_instance.run()
 
 if __name__ == "__main__":
     main()

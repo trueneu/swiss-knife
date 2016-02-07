@@ -9,6 +9,7 @@ see swk for more information on License and contacts
 import logging
 import os
 import glob
+
 from swk import swk_classes
 import inspect
 from swk import swk_exceptions
@@ -16,6 +17,7 @@ import argparse
 import configparser
 import sys
 import exrex
+import pkg_resources
 
 shell_mode_off = False
 try:
@@ -32,12 +34,9 @@ class SwissKnife(object):
     _version = "0.04a"
 
     _environment = "production"
-    _swk_modules_dir = "swk/swk_plugins"
+    swk_plugin_dir_default = "swk_plugins"
 
-    if _environment == "production":
-        _swk_config_path = "swk.ini"
-    elif _environment == "testing":
-        _swk_config_path = "swk-private.ini"
+    _swk_config_path = "~/.swk/swk.ini"
 
     def __init__(self, **kwargs):
         # DEBUG PRINT
@@ -46,14 +45,17 @@ class SwissKnife(object):
             setattr(self, "_{0}".format(k), v)
 
         self._config = self._read_config()
+        
         self._logging_init()
 
         self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins").split()]
 
-        self._cache_folder_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].pop("cache_folder",
+        self._cache_directory_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].get("cache_directory",
                                                                                                   "~/.swk")))
-        self._cache_folder_init()
+        self._cache_directory_init()
 
+        self._swk_plugins_dirs = [os.path.expanduser(x) for x in self._config["Main"].get("plugins_directories", "").split()]
+        self._swk_plugins_dirs.append("{0}/{1}".format(self._swk_dir, self.swk_plugin_dir_default))
         self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules = self._modules_import()
         self._available_commands, self._available_parsers = self._get_available_commands_and_parsers()
         self._commands_help_message, self._parsers_help_message, \
@@ -93,17 +95,17 @@ class SwissKnife(object):
             self._dbg_prints = True
         else:
             self._dbg_prints = False
-        logfile = self._config["Main"].pop("logfile", "swk.log")
+        logfile = os.path.expanduser(self._config["Main"].get("logfile", "~/.swk/swk.log"))
         logging.basicConfig(filename=logfile, filemode='a', level=loglevel,
                             format='[%(asctime)s] %(levelname)s : %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logging.debug("swk started")
 
-    def _cache_folder_init(self):
-        if not os.path.exists(self._cache_folder_expanded):
+    def _cache_directory_init(self):
+        if not os.path.exists(self._cache_directory_expanded):
             try:
-                os.mkdir(self._cache_folder_expanded)
+                os.mkdir(self._cache_directory_expanded)
             except OSError:
-                self._die("Couldn't create folder {0}. Check permissions".format(self._cache_folder_expanded))
+                self._die("Couldn't create {0} directory. Check permissions".format(self._cache_directory_expanded))
 
 
     @staticmethod
@@ -119,25 +121,52 @@ class SwissKnife(object):
         plugin_modules = list()
         plugin_command_modules = list()
         plugin_parser_modules = list()
-        try:
-            os.chdir("{0}/{1}".format(self._swk_dir, self._swk_modules_dir))
-            module_filenames = glob.glob("*.py")
-        except OSError:
-            self._die("{0} does not exist.".format(self._swk_modules_dir))
 
-        """import all the plugin modules and put them into list"""
+        oldcwd = os.getcwd()
 
-        for module_filename in module_filenames:
-            if module_filename in self._disabled_plugins:
-                continue
-            module_name, _, _ = module_filename.rpartition('.py')
-            module_full_name = "{0}.{1}".format(self._swk_modules_dir, module_name)
+        # directory imports
+
+        for swk_plugins_dir in self._swk_plugins_dirs:
             try:
-                module = __import__(module_full_name.replace('/', '.'), fromlist=[self._swk_modules_dir.replace('/', '.')])
-            except ImportError as e:
-                self._die("Couldn't import module {0}: {1}.".format(module_full_name, str(e)))
+                swk_plugins_dir_abspath = os.path.abspath(swk_plugins_dir)
+                os.chdir(swk_plugins_dir_abspath)
+                module_filenames = glob.glob("*.py")
+            except OSError:
+                self._die("{0} does not exist.".format(swk_plugins_dir_abspath))
+
+            """import all the plugin modules and put them into list"""
+
+            for module_filename in module_filenames:
+                if module_filename in self._disabled_plugins or module_filename in ['__init__.py']:
+                    continue
+                module_name, _, _ = module_filename.rpartition('.py')
+
+                try:
+                    sys.path.append(os.getcwd())
+                    module = __import__(module_name)
+                except ImportError as e:
+                    self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
+                                       if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+        os.chdir(oldcwd)
+
+        # entry_points imports
+        for entry_point in pkg_resources.iter_entry_points(group='swk_plugin', name=None):
+            #first variant
+            module_name = entry_point.module_name
+            module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
-                                   if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+                                       if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+
+            #second variant
+            """
+            package_name = entry_point.module_name
+            package = __import__(package_name)
+            for module in inspect.getmembers(package):
+                plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
+                                           if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+            """
+
 
         """then sort them into command modules and parser modules"""
         plugin_command_modules.extend([(name, obj) for (name, obj) in plugin_modules
@@ -234,9 +263,10 @@ class SwissKnife(object):
     def _read_config(self):
         result = dict()
 
-        os.chdir(self._swk_dir)
+        #os.chdir(self._swk_dir)
+
         config = configparser.ConfigParser()
-        config.read(self._swk_config_path)
+        config.read(os.path.expanduser(self._swk_config_path))
 
         for section in config.sections():
             result[section] = dict()
@@ -377,7 +407,7 @@ class SwissKnife(object):
                                                                         swk_dir=self._swk_dir,
                                                                         swk_path=self._swk_path,
                                                                         cwd=self._cwd,
-                                                                        cache_folder=self._cache_folder_expanded)
+                                                                        cache_directory=self._cache_directory_expanded)
 
         logging.info("Executing command with config: {0}".format(self._config[self._command_executer_name]))
         obj = self._command_executer_class(**self._config[self._command_executer_name])
