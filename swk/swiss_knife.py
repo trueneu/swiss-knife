@@ -137,9 +137,9 @@ class SwissKnife(object):
             """import all the plugin modules and put them into list"""
 
             for module_filename in module_filenames:
-                if module_filename in self._disabled_plugins or module_filename in ['__init__.py']:
-                    continue
                 module_name, _, _ = module_filename.rpartition('.py')
+                if module_name in self._disabled_plugins or module_name in ['__init__']:
+                    continue
 
                 try:
                     sys.path.append(os.getcwd())
@@ -154,6 +154,8 @@ class SwissKnife(object):
         for entry_point in pkg_resources.iter_entry_points(group='swk_plugin', name=None):
             #first variant
             module_name = entry_point.module_name
+            if module_name in self._disabled_plugins or module_name in ['__init__']:
+                continue
             module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                        if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
