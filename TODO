@@ -3,12 +3,10 @@
 10. insert logging in plugins
 13. catch paramiko.ssh_exception.% is ssh module
 15. make mntnce command - maintenance adding/editing in zabbix
-22. implement pip/easy_install ?
-24. write own setup.py files for all the plugins? omg.
 25. write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
-26. make an interactive shell mode (pypsi?)
-26.8 rewrite sk-ssh ctrl+c exiting/catching if needed (it's unclear if it's needed) -- it is
+26.8 rewrite sk-ssh ctrl+c exiting/catching if needed (it's unclear if it's needed)
 27. add get/set/destroy Foreman parameters commands
 28. fix passing wrong host to foreman getcls, try another cmds
 38. pssh xen-trueneu-dev "sleep 5 ; mysql -e 'show slave status\G'" | sys grep -i auto -- find a way to make this work in shell mode
+pssh xen-trueneu-dev "mysql -e 'show variables like \"read_only\"'" -- how should it parse and look?
 39. try to use fabric in ssh module?

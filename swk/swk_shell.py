@@ -13,6 +13,7 @@ from pypsi.plugins.history import HistoryCommand, HistoryPlugin
 from pypsi.core import Plugin
 from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
 
+
 class SWKShellCmdlinePP(Plugin):
     def __init__(self, preprocess=80, postprocess=None, **kwargs):
         super(SWKShellCmdlinePP, self).__init__(preprocess=preprocess,
@@ -122,7 +123,7 @@ class SWKShell(Shell):
     pwd_cmd = PwdCommand()
     cd_cmd = SWKChdirCommand()
     system_cmd = SystemCommand(name='sys')
-    swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
+    #swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
     history_plugin = HistoryPlugin()
     history_command = HistoryCommand(name='hist')
     help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
