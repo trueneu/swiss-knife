@@ -10,8 +10,8 @@ from swk import swk_classes
 
 
 class ParserPluginExample(swk_classes.SWKParserPlugin):
-    _parsers = ['^']
-    _parsers_help_message = "^testparser2\n"
+    _parsers = {'^': {'help': 'Example parser. Does nothing\n'}}
+    _parsers_help_message = "^exampleparser2\n"
 
     def __init__(self, *args, **kwargs):
         super(ParserPluginExample, self).__init__(*args, **kwargs)
