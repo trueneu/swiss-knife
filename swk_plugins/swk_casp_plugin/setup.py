@@ -2,6 +2,7 @@
 
 from setuptools import setup, find_packages
 
+version = {}
 with open('swk_casp_plugin/version.py') as f:
     exec(f.read(), version)
 

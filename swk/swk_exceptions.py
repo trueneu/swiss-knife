@@ -20,3 +20,7 @@ class OverriddenParserError(Exception):
 class ExpandingHostlistError(Exception):
     def __init__(self, message):
         super(ExpandingHostlistError, self).__init__(message)
+
+class ConfigNotFoundError(Exception):
+    def __init__(self, message):
+        super(ConfigNotFoundError, self).__init__(message)

@@ -18,6 +18,7 @@ import configparser
 import sys
 import exrex
 import pkg_resources
+from swk import version
 
 shell_mode_off = False
 try:
@@ -30,8 +31,10 @@ except ImportError:
     shell_mode_off = True
 
 
+
+
 class SwissKnife(object):
-    _version = "0.04a"
+    _version = version.__version__
 
     _environment = "production"
     swk_plugin_dir_default = "swk_plugins"
@@ -82,7 +85,7 @@ class SwissKnife(object):
 
 
     def _logging_init(self):
-        loglevel_string = self._config["Main"].pop("loglevel", "warning")
+        loglevel_string = self._config["Main"].get("loglevel", "warning")
         try:
             loglevel = {"debug": logging.DEBUG,
                         "info": logging.INFO,
@@ -267,8 +270,12 @@ class SwissKnife(object):
 
         #os.chdir(self._swk_dir)
 
+        config_path = os.path.expanduser(self._swk_config_path)
+        if not os.path.exists(config_path):
+            raise swk_exceptions.ConfigNotFoundError("Config file not found: {0}".format(config_path))
+
         config = configparser.ConfigParser()
-        config.read(os.path.expanduser(self._swk_config_path))
+        config.read(config_path)
 
         for section in config.sections():
             result[section] = dict()
