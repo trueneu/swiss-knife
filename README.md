@@ -1,47 +1,56 @@
 # swiss-knife
-A tiny extendable utility for running commands against multiple hosts (and a little bit more).
+An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
+with parallel ssh out of the box.
+
+```
+swk pssh ^mysql "mysql -e 'start slave;'"
+```
+
+### What can it do?
+The basic idea is: you specify what to do (a command), a list of hosts or hostgroups to do that with, and
+additional arguments if needed (depends on what you want to do). You can easily define your own commands
+through the plugin interface, as well as your own hostgroup parsers (usually they'll just ask some API in
+your environment about which hosts are included in provided hostgroup). Basic Foreman, Zabbix API and ssh
+ functions are supported out of the box.
+
+Please note that this is *not* `fabric`.
 
 ### Installation
 
-As for now, just download it somewhere, and make sure you have installed
+As for now, just download it somewhere, and run
 
-for main program:
-    [exrex](https://github.com/asciimoo/exrex)
+```
+pip install <some_path>/swk
+```
+If you need plugins for casp, Foreman or Zabbix, also run
 
-for sk-casp plugin:
-    [requests](https://github.com/kennethreitz/requests)
-    
-for sk-zabbix plugin:
-    [pyzabbix](https://github.com/lukecyca/pyzabbix)
-    
-for sk-ssh-module plugin:
-    [paramiko](https://github.com/paramiko/paramiko)
-    [scp](https://github.com/jbardin/scp.py)
+```
+pip install <some_path>/swk_plugins/swk_casp_plugin
+pip install <some_path>/swk_plugins/swk_foreman_plugin
+pip install <some_path>/swk_plugins/swk_zabbix_plugin
+```
 
-for sk-foreman plugin:
-    [python-foreman](https://github.com/david-caro/python-foreman)
-
-AFAIK, all of these can be installed via `pip`. For more information, please refer to corresponding sites. At this moment there is no setup/dependency mechanism at all.
+Please note that you should use python3.2+ for shell mode to work.
 
 ### Usage
 Typical usage looks like
 
-```sk pssh "%hostgroup1[,[-]^hostgroup2,..,host1,[-]host2]" uptime```
+```swk pssh "%hostgroup1[,[-]^hostgroup2,..,host1,[-]host2]" uptime```
 
 which executes uptime on all the hosts over ssh in parallel fashion.
 
 `%`, `^` and other non-alphabetical characters can be treated as hostgroup modifiers which indicate which parser should expand a given hostgroup into a host list.
 hyphen (`-`) in front of hostgroup or a host means that hostgroup or host will be excluded from resulting list.
 A host may be a simple regex (no * quantificator or anychar (.), no lookahead/lookbehinds, no commas as comma is a hostgroups separator,
-so no {n,m} style regexes), `sk` will
+so no {n,m} style regexes), `swk` will
 generate strings that match it and use it as hosts. If you're excluding hosts that aren't included yet, nothing happens. Hostlist is expanded from left to right. Example:
 
-```sk pssh "^g1,-host[1234]" echo Yay```
+```swk pssh "^g1,-host[1234]" echo Yay```
 
 will execute `echo Yay` in parallel fashion on each host that's in zabbix hostgroup `g1` except hosts `host1`, `host2`, `host3` and `host4`.
 
 ### Bundled modules (plugins)
-From the box, sk supports:
+From the box, swk supports:
 - expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
 (`dist` command, recursive and without preserving times by default), copying files from multiple
@@ -51,27 +60,25 @@ and `setenv` commands), getting, adding and removing classes linked to hosts and
 `rmcls`, `getgcls`, `addgcls`, `rmgcls` respectively), and listing available classes (`lscls`)
 - and just displaying results of hostlist expansion (`dr` for 'dry-run')
 
-**By default, all the modules but `dr` and `ssh` module are turned off.**
-To enable them, you need to copy corresponding files from sk-modules/sk-modules-bundle to sk-modules dir, or
-just symlink them (**symlink names have to end with '.py'**). To symlink all the modules present at once, run `enable-all-modules.sh`
-script.
+**By default, all the modules but `dr` and `ssh` are not installed.**
+To install them, please refer to [Installation](#Installation) section above.
 
 ### Examples
 Imagine that you need to grep all your frontend nginx logs for string '/api/do_something'. Your frontend hostnames
 are `frontend00`, `frontend01`, ..., `frontend99`. You could use something like
 
-```sk pssh frontend[0-9][0-9] grep '/api/do_something' /var/log/nginx/access.log```
+```swk pssh frontend[0-9][0-9] grep '/api/do_something' /var/log/nginx/access.log```
 
 You can interrupt the command execution at any moment with Ctrl-C.
 
 Suppose your servers are named a bit more sophisticated, like `frontend01`, `frontend02`, ..., `frontend25`. This command
 would do the trick (note the quotes around host expression):
 
-```sk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log```
+```swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log```
 
 You can always verify if you did the host expression right:
 
-```sk dr 'frontend([0-1][0-9]|2[0-5]),-frontend00'```
+```swk dr 'frontend([0-1][0-9]|2[0-5]),-frontend00'```
 
 Output:
 
@@ -86,20 +93,20 @@ frontend25
 Suppose you also have servers `backend01`, `backend02`, ..., `backend10`, and you want to run `uptime` on both
 frontends and backends. Try this one:
 
-```sk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00,backend(0[1-9]|10)' uptime```
+```swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00,backend(0[1-9]|10)' uptime```
 
 Now imagine you have to execute a certain script named `test.sh` on those 25 frontends locally. First, copy it to target hosts:
 
-```sk dist 'frontend([0-1][0-9]|2[0-5]),-frontend00' ./my_scripts/test.sh /usr/share/```
+```swk dist 'frontend([0-1][0-9]|2[0-5]),-frontend00' ./my_scripts/test.sh /usr/share/```
 
 and then execute it:
 
-```sk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' /usr/share/test.sh```
+```swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' /usr/share/test.sh```
 
 Imagine you need to do something with nginx logs locally on your computer (say, a simple statistics calculation).
 You can gather all the logs to your machine with one command:
 
-```sk gather 'frontend([0-1][0-9]|2[0-5]),-frontend00' /var/log/nginx/access.log ./nginx-logs-from-production```
+```swk gather 'frontend([0-1][0-9]|2[0-5]),-frontend00' /var/log/nginx/access.log ./nginx-logs-from-production```
 
 This will create 'nginx-logs-from-production' directory in your current working directory, and copy over all
 the access.log files, appending a suffix so you can tell from which host each log has been copied.
@@ -108,31 +115,62 @@ Say you have a Zabbix installation in your environment, and all the frontends ar
 You can do the same as above using zabbix hostgroup expansion (note that `zabbix` module is disabled by
  default. More on that in [bundled modules](#bundled-modules-plugins) section above)
 
-```sk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production```
+```swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production```
 
 Imagine that you have Foreman installation and you need to set all the frontends' environments to 'development'
 (note that you still use ^ here, so host expansion mechanism works with Zabbix hostgroups)
 
-```sk setenv ^frontend development```
+```swk setenv ^frontend development```
 
 ...or add to frontend Foreman hostgroup your brand new `nginx::verbose_access_logs` Puppet class
 
-```sk addgcls frontend nginx::verbose_access_logs```
+```swk addgcls frontend nginx::verbose_access_logs```
 
 Remember to use and escape quotes when needed!
 
-```sk pssh ^mysql mysql -e 'show variables like "read_only"'``` won't work (due to shell quote processing,
+```swk pssh ^mysql mysql -e 'show variables like "read_only"'``` won't work (due to shell quote processing,
 it represents `mysql -e show variables like "read only"`), but
 
-```sk pssh ^mysql "mysql -e 'show variables like \"read_only\"'"``` will.
+```swk pssh ^mysql "mysql -e 'show variables like \"read_only\"'"``` will.
 
 
-You can get more info on available parsers, commands and arguments by running `sk -h` .
+You can get more info on available parsers, commands and arguments by running `swk -h` .
 
 If you need to change your default SSH user, parallel processes count, API credentials or such,
- take a look at `sk.ini` file.
+ take a look at `swk.ini` file.
+
+##### Shell mode
+
+If you run `swk` without any arguments, it starts in shell mode. Like this:
+
+```
+trueneu$ swk
+swk>
+```
+
+You can absolutely all the same like in command line mode, but shell mode has a few advantages:
+
+- you don't need to think about quote escaping in tricky commands, because everything inside quotes is
+treated literally
+- it supports tab completion
+
+For example, that ugly mysql example above would look like this in shell mode:
+
+```
+swk> pssh ^mysql mysql -e 'show variables like "read_only"'
+```
+
+If you want, you may call any system utility from inside `swk` shell via `sys` command:
+```
+swk> pssh ^mysql mysql -e 'show variables like "%format%" | sys grep innodb'
+```
+
+It also supports history through `history` command, etc.
+
 
 ### Details
+#TODO rewrite this section
+
 All the commands, hostgroup modifiers and parsers code is defined through plugins in **sk-modules** dir.
 You can define your own rather easily.
 You can find some working modules there mentioned above, as well as dummy examples in **sk-modules/sk-modules-examples** .
@@ -166,7 +204,7 @@ use `dr` command.
 
 There may be some issues with configparser. If there are, please notify me. In fact, there may be issues with anything.
 
-The code itself should work on python2.7.10+, python3+.
+The code itself should work on python2.7+, python3.2+.
 
 ###### Usage notes
 
@@ -182,8 +220,23 @@ left bracket will be treated as a hostgroup modifier.
 - all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for sk program
 - `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
+##### Dependencies
+
+- for main program:
+    [exrex](https://github.com/asciimoo/exrex)
+    [pypsi](https://github.com/ameily/pypsi)
+- for swk-casp plugin:
+    [requests](https://github.com/kennethreitz/requests)
+- for swk-zabbix plugin:
+    [pyzabbix](https://github.com/lukecyca/pyzabbix)
+- for swk-ssh-module plugin:
+    [paramiko](https://github.com/paramiko/paramiko)
+    [scp](https://github.com/jbardin/scp.py)
+- for swk-foreman plugin:
+    [python-foreman](https://github.com/david-caro/python-foreman)
+
 ### Contributions
-Please do! Don't forget to exclude sensitive details from `sk.ini` and change `SwissKnife`
+Please do! Don't forget to exclude sensitive details from `swk.ini` and change `SwissKnife`
 `_environment` attribute to `production` when pushing.
 
 (c) Pavel "trueneu" Gurkov, 2016

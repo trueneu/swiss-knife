@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
@@ -21,15 +21,15 @@ mailto: true.neu@gmail.com
 """
 
 import os
-import swiss_knife
+from swk import swiss_knife
 
 
 def main():
     cwd = os.getcwd()
-    sk_dir = os.path.dirname(os.path.abspath(__file__))
-    sk_path = __file__
-    sk = swiss_knife.SwissKnife(cwd=cwd, sk_dir=sk_dir, sk_path=sk_path)
-    sk.run()
+    swk_dir = os.path.dirname(os.path.abspath(__file__))
+    swk_path = __file__
+    swk_instance = swiss_knife.SwissKnife(cwd=cwd, swk_dir=swk_dir, swk_path=swk_path)
+    swk_instance.run()
 
 if __name__ == "__main__":
     main()

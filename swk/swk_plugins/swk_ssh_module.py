@@ -1,13 +1,13 @@
 """
-sk - A tiny extendable utility for running commands against multiple hosts.
+swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../sk for more information on License and contacts
+see ../swk for more information on License and contacts
 """
 
 
-import sk_classes
+from swk import swk_classes
 import paramiko
 import os
 import multiprocessing
@@ -223,12 +223,12 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
     return host, paramiko_channel.recv_exit_status()
 
 
-class SSHPluginError(sk_classes.SKCommandError):
+class SSHPluginError(swk_classes.SWKCommandError):
     def __init__(self, message):
         super(SSHPluginError, self).__init__(message)
 
 
-class SSHPlugin(sk_classes.SKCommandPlugin):
+class SSHPlugin(swk_classes.SWKCommandPlugin):
     _commands = {'ssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh host by host. Arguments: <host expression> <command to execute>\n'},
                  'pssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh in parallel fashion. Arguments: <host expression> <command to execute>\n'},
                  'dist': {'requires_hostlist': True, 'help': 'Distributes a file among hosts over ssh. Arguments: <host expression> <file to distribute> <destination path>\n'
@@ -249,7 +249,7 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
         self._ssh_command = ""
 
         if len(self._command_args) == 0:
-            raise sk_classes.SKCommandError("Insufficient arguments.")
+            raise swk_classes.SWKCommandError("Insufficient arguments.")
 
         for command_arg in self._command_args:
             self._ssh_command += command_arg + ' '
@@ -343,7 +343,7 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
             for k, v in self._exit_statuses.items():
                 if k != 0:
                     sys.stdout.write("%s: %s;\n" % (str(k), str(v)))
-            fix_command = "\nFix: {0} {1} {2} {3}\n".format(self._sk_path, self._command, failed_hosts, self._ssh_command)
+            fix_command = "\nFix: {0} {1} {2} {3}\n".format(self._swk_path, self._command, failed_hosts, self._ssh_command)
             sys.stdout.write(fix_command)
 
     def _run(self):
@@ -357,9 +357,9 @@ class SSHPlugin(sk_classes.SKCommandPlugin):
                                   for paramiko_thread_config in self._paramiko_configs]
 
 
-#            self._pool.close()
+            self._pool.close()
             try:
-#                self._pool.join()
+                self._pool.join()
                 self._results = [result.get(0xFFFF) for result in self._pool_results]
             except KeyboardInterrupt:
                 #print("Ctrl-C caught!")
