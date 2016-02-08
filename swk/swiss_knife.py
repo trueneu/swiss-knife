@@ -31,14 +31,10 @@ except ImportError:
     shell_mode_off = True
 
 
-
-
 class SwissKnife(object):
     _version = version.__version__
 
-    _environment = "production"
     swk_plugin_dir_default = "swk_plugins"
-
     _swk_config_path = "~/.swk/swk.ini"
 
     def __init__(self, **kwargs):

@@ -38,7 +38,8 @@ setup(name='swk',
       install_requires=[
           'exrex>=0.9.4',
           'paramiko>=1.16.0',
-          'scp>=0.10.2'
+          'scp>=0.10.2',
+          'pypsi>=1.3.0'
       ],
       long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running',
       entry_points={

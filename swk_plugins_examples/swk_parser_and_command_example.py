@@ -3,7 +3,7 @@ swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../../swk for more information on License and contacts
+see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
 from swk import swk_classes

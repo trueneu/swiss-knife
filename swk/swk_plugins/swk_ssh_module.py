@@ -357,9 +357,9 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
                                   for paramiko_thread_config in self._paramiko_configs]
 
 
-#            self._pool.close()
+            self._pool.close()
             try:
-#                self._pool.join()
+                self._pool.join()
                 self._results = [result.get(0xFFFF) for result in self._pool_results]
             except KeyboardInterrupt:
                 #print("Ctrl-C caught!")

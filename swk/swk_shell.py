@@ -29,7 +29,7 @@ class SWKShellCmdlinePP(Plugin):
         i = 0
         for (i, token) in enumerate(tokens):
             if isinstance(token, StringToken):
-                if token.quote:
+                if token.quote == "'":
                     result.append(StringToken(i, "{quote}{s}{quote}".format(
                         quote=token.quote or '',
                         s=token.text.replace('\\', '\\\\\\')), quote=None))
@@ -123,9 +123,9 @@ class SWKShell(Shell):
     cd_cmd = SWKChdirCommand()
     system_cmd = SystemCommand(name='sys')
     swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
-    help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd}
     history_plugin = HistoryPlugin()
-    history_command = HistoryCommand()
+    history_command = HistoryCommand(name='hist')
+    help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
 
     def __init__(self, swk_instance):
         try:

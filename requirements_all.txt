@@ -1,3 +1,0 @@
--r requirements_casp.txt
--r requirements_foreman.txt
--r requirements_zabbix.txt
