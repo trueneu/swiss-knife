@@ -99,7 +99,10 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
             f.write(str(data))
 
     def _kill_cache(self):
-        os.remove(self._cache_file)
+        try:
+            os.remove(self._cache_file)
+        except OSError:
+            pass
 
     def _get_all_hosts_info(self):
         data = self._read_cache()
