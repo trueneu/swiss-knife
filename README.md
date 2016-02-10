@@ -194,7 +194,7 @@ or a command that will take a Nagios hostgroup and do something with it using Na
 Information that's used for modules to work (such as authentication information for various APIs) may (and should)
 be stored in config named **swk.ini**.
 
-###### Shell mode parsing details
+##### Shell mode parsing details
 When in shell mode, every argument starting with the third *to the end of the line* is passed literally
 even if not quoted except for built-in `pypsi` commands (that includes `pwd`, `cd`, `sys` etc,
 full list can be found via `help` command in shell mode). It sounds a little bit confusing at first,
