@@ -2,9 +2,11 @@
 An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
 with parallel ssh out of the box.
 
+Destroying all your databases at once has never been this simple!
 ```
-swk pssh ^mysql "mysql -e 'start slave;'"
+swk pssh ^mysql 'rm -rf /var/lib/mysql'
 ```
+(yeah, you really shouldn't do that in production environment. Unless...)
 
 ### What can it do?
 The basic idea is: you specify what to do (a command), a list of hosts or hostgroups to do that with, and
@@ -30,7 +32,11 @@ pip install <some_path>/swk_plugins/swk_foreman_plugin
 pip install <some_path>/swk_plugins/swk_zabbix_plugin
 ```
 
+Installation script will also create **~/.swk** directory, where you should find **swk.ini** configuration
+file, and that's used to store shell mode command history, program's log, various plugins' cache, etc.
+
 Please note that you should use python3.2+ for shell mode to work.
+
 
 ### Usage
 Typical usage looks like
@@ -49,19 +55,24 @@ generate strings that match it and use it as hosts. If you're excluding hosts th
 
 will execute `echo Yay` in parallel fashion on each host that's in zabbix hostgroup `g1` except hosts `host1`, `host2`, `host3` and `host4`.
 
-### Bundled modules (plugins)
+### Available and bundled plugins
 From the box, swk supports:
-- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
 (`dist` command, recursive and without preserving times by default), copying files from multiple
 hosts over ssh (`gather`)
+- and just displaying results of hostlist expansion (`dr` for 'dry-run')
+
+By installing additional packages named `swk_*_plugin`, you also get
+- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - getting and setting hosts environments in **Foreman** (`getenv`
 and `setenv` commands), getting, adding and removing classes linked to hosts and hostgroups (`getcls`, `addcls`,
 `rmcls`, `getgcls`, `addgcls`, `rmgcls` respectively), and listing available classes (`lscls`)
-- and just displaying results of hostlist expansion (`dr` for 'dry-run')
+- expanding **casp** hostgroups (those are really Foreman's, but casp's API is simpler and faster. However,
+I really doubt you have **casp** installed)
 
-**By default, all the modules but `dr` and `ssh` are not installed.**
 To install them, please refer to [Installation](#Installation) section above.
+
+Hopefully, there are more coming.
 
 ### Examples
 Imagine that you need to grep all your frontend nginx logs for string '/api/do_something'. Your frontend hostnames
@@ -113,7 +124,7 @@ the access.log files, appending a suffix so you can tell from which host each lo
 
 Say you have a Zabbix installation in your environment, and all the frontends are in 'frontend' hostgroup.
 You can do the same as above using zabbix hostgroup expansion (note that `zabbix` module is disabled by
- default. More on that in [bundled modules](#bundled-modules-plugins) section above)
+ default. More on that in [Available plugins](#available-and-bundled-plugins) section above)
 
 ```swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production```
 
@@ -171,7 +182,7 @@ It also supports history through `hist` command, etc.
 Commands, hostgroup modifiers and parsers code are defined through swk plugins. They can be connected
 to the main program in three ways: being included in main package under **swk/swk_plugins** dir,
 having a defined **swk_plugin** entry point in their setup.py and installed or just being put in
-one of **plugins_directories** dir from `swk.ini` file.
+one of **plugins_directories** dir from **swk.ini** file.
 
 You can find some working plugins there mentioned above, as well as dummy examples in **swk_plugins_examples** .
 Further help can be found in **swk/swk_classes.py**, which you MUST import when defining your own
@@ -229,7 +240,7 @@ The code itself should work on python2.7+, python3.2+.
 - currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
 left bracket will be treated as a hostgroup modifier.
 - ssh module needs a running ssh-agent with private keys added, or private keys need to remain password free
-- username for ssh specified in swk.ini will override your current username and username from .ssh/config if present
+- username for ssh specified in **swk.ini** will override your current username and username from .ssh/config if present
 - Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks from multiprocessing)
 - interactive user input is NOT supported when running a command
 
@@ -256,7 +267,6 @@ left bracket will be treated as a hostgroup modifier.
     [python-foreman](https://github.com/david-caro/python-foreman)
 
 ### Contributions
-Please do! Don't forget to exclude sensitive details from `swk.ini` and change `SwissKnife`
-`_environment` attribute to `production` when pushing.
+Please do! Don't forget to exclude sensitive details from `swk.ini`.
 
 (c) Pavel "trueneu" Gurkov, 2016

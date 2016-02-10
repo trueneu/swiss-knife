@@ -66,7 +66,7 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
         else:
             self._grouplist = self._hostlist
         self._fapi = self._foreman_api_init()
-        self._cache_filename = "foreman"
+        self._cache_filename = ".foreman_cache"
         self._cache_file = "{0}/{1}".format(self._cache_directory, self._cache_filename)
         self._cache_expire_time = 1800
         self._all_hosts_info = list()
