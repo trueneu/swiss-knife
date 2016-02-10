@@ -171,12 +171,13 @@ For example, that ugly mysql example above would look like this in shell mode:
 swk> pssh ^mysql mysql -e 'show variables like "read_only"'
 ```
 
-If you want, you may call any system utility from inside `swk` shell via `sys` command:
+Additionally, you may call any system utility from inside `swk` shell via `sys` command:
 ```
 swk> pssh ^mysql mysql -e 'show variables like "%format%"' | sys grep innodb
 ```
 
-It also supports history through `hist` command, etc.
+It also supports history through `hist` command, etc. To get help on any command, issue `help <command>` or `help`
+without arguments to get an overview.
 
 ### Details
 Commands, hostgroup modifiers and parsers code are defined through swk plugins. They can be connected
