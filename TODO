@@ -6,7 +6,5 @@
 25. write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
 26.8 rewrite sk-ssh ctrl+c exiting/catching if needed (it's unclear if it's needed)
 27. add get/set/destroy Foreman parameters commands
-28. fix passing wrong host to foreman getcls, try another cmds
-38. pssh xen-trueneu-dev "sleep 5 ; mysql -e 'show slave status\G'" | sys grep -i auto -- find a way to make this work in shell mode
-pssh xen-trueneu-dev "mysql -e 'show variables like \"read_only\"'" -- how should it parse and look?
 39. try to use fabric in ssh module?
+40. remove _plugin suffixes from... well, plugins
