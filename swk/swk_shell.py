@@ -17,7 +17,7 @@ from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
 class SWKShellCmdlinePP(Plugin):
     def __init__(self, preprocess=80, postprocess=None, **kwargs):
         super(SWKShellCmdlinePP, self).__init__(preprocess=preprocess,
-                                               postprocess=postprocess, **kwargs)
+                                                postprocess=postprocess, **kwargs)
 
     def setup(self, shell):
         pass
@@ -26,20 +26,76 @@ class SWKShellCmdlinePP(Plugin):
         if origin != 'input':
             return tokens
 
+        # I really have to return here to Meily's variant with detecting "the end of command" case
+        # collect cmd, hostlist, and pass the quoted argument
+        # and then shlex it on the other side with unquoting there
+
         result = []
+        i = 0
+
+        cmd = None
+        hostlist = None
+        arg = ''
         i = 0
         for (i, token) in enumerate(tokens):
             if isinstance(token, StringToken):
-                if token.quote == "'":
-                    result.append(StringToken(i, "{quote}{s}{quote}".format(
-                        quote=token.quote or '',
-                        s=token.text.replace('\\', '\\\\\\')), quote=None))
+                # We only really care about string tokens
+                if cmd:
+                    if cmd.text in shell.enabled_builtin_pypsi_cmds.keys():
+                        result.append(token)
+                    else:
+                        if hostlist:
+                            arg += "{quote}{s}{quote}".format(
+                                quote=token.quote or '',
+                                s=token.text.replace('\\', '\\\\\\')
+                            )
+                        else:
+                            result.append(token)
+                            hostlist = token
                 else:
-                    result.append(StringToken(i, "{quote}{s}{quote}".format(
-                        quote=token.quote or '',
-                        s=token.text), quote=None))
-            else:
+                    # The first string token we see is the actual command we
+                    # need to execute
+                    result.append(token)
+                    cmd = token
+
+            elif isinstance(token, WhitespaceToken):
+                if arg:
+                    # append the whitespace
+                    arg += ' '
+                elif cmd:
+                    # We need whitespace between the command and the arguments
+                    # so add it here
+                    result.append(token)
+
+            elif isinstance(token, OperatorToken):
+                if token.operator in ('&&', '|', '||', ';'):
+                    # We found a chainning operator so start over
+                    cmd = None
+                    hostlist = None
+                    if arg:
+                        result.append(StringToken(i, arg))
+                        arg = ''
                 result.append(token)
+
+            else:
+                # Unknown token
+                result.append(token)
+
+        if arg:
+            result.append(StringToken(i+1, arg))
+
+#        for (i, token) in enumerate(tokens):
+#            if isinstance(token, StringToken):
+#                if token.quote == "'":
+#                    result.append(StringToken(i, "{s}".format(s=token.text.replace('\\', '\\\\\\')), quote=token.quote))
+#                else:
+#                    result.append(token)
+#                else:
+#                    result.append(StringToken(i, "{quote}{s}{quote}".format(
+#                        quote=token.quote or '',
+#                        s=token.text), quote=token.quote))
+#            else:
+#                result.append(token)
 
         return result
 
@@ -123,11 +179,11 @@ class SWKShell(Shell):
     pwd_cmd = PwdCommand()
     cd_cmd = SWKChdirCommand()
     system_cmd = SystemCommand(name='sys')
-    #swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
     history_plugin = HistoryPlugin()
     history_command = HistoryCommand(name='hist')
-    help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
+    enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
 
+    swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
     def __init__(self, swk_instance):
         try:
             _, columns = os.popen('stty size 2>/dev/null', 'r').read().split()

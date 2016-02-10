@@ -21,15 +21,18 @@ class ForemanError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
 class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
     _parsers = dict()
     _parsers_help_message = ""
+    _class_delim = ','
+    _delimiter_help_message = "Use {0} as delimiter for classes list in shell mode.\n"
 
-    _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. Arguments: <host expression>\n'},
-                 'setenv': {'requires_hostlist': True, 'help': 'Sets environment for hosts. Arguments: <host expression> <environment name>\n'},
-                 'getcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hosts. Arguments: <host expression>\n'},
-                 'addcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hosts. Arguments: <host expression> <puppet class name(s)>\n'},
-                 'rmcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hosts. Arguments: <host expression> <puppet class name(s)>\n'},
-                 'getgcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hostgroups. Arguments: <foreman hostgroup(s)>\n'},
-                 'addgcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
-                 'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
+
+    _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. Arguments: <host expression>\n' + _delimiter_help_message},
+                 'setenv': {'requires_hostlist': True, 'help': 'Sets environment for hosts. Arguments: <host expression> <environment name>\n' + _delimiter_help_message},
+                 'getcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hosts. Arguments: <host expression>\n' + _delimiter_help_message},
+                 'addcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hosts. Arguments: <host expression> <puppet class name(s)>\n' + _delimiter_help_message},
+                 'rmcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hosts. Arguments: <host expression> <puppet class name(s)>\n' + _delimiter_help_message},
+                 'getgcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hostgroups. Arguments: <foreman hostgroup(s)>\n' + _delimiter_help_message},
+                 'addgcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n' + _delimiter_help_message},
+                 'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n' + _delimiter_help_message},
                  'lscls': {'requires_hostlist': False, 'help': 'Prints available puppet classes. Arguments: None\n'}}
     _commands_help_message = "Foreman plugin:\n" \
                              "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n" \
@@ -38,6 +41,7 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
                              "getgcls, addgcls and rmgcls - do the same to Foreman hostgroups\n" \
                              "\tuse group names instead of host names here\n\n"
 
+
     def _append_default_domain(self):
         result = list()
         for host in self._hostlist:
@@ -45,6 +49,12 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
                 host += '.' + self._default_domain
             result.append(host)
 
+        return result
+
+    def _parse_class_list(self, class_list):
+        result = list()
+        for foreman_class in class_list:
+            result.extend(foreman_class.split(self._class_delim))
         return result
 
     def __init__(self, *args, **kwargs):
@@ -61,6 +71,9 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
         self._cache_expire_time = 1800
         self._all_hosts_info = list()
         self._all_classes_info = list()
+
+        #DEBUG PRINT
+        print("command_args: {0}".format(self._command_args))
 
     def _foreman_api_init(self):
         return Foreman(self._foreman_url, (self._user, self._password), verify=self._verify_ssl_boolean, api_version=2)
@@ -153,11 +166,12 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
 
     def _get_classes_short_info(self):
         result = list()
-        for class_name in self._command_args:
+        class_list = self._parse_class_list(self._command_args)
+        for class_name in class_list:
             class_info_verbose = self._fapi.puppetclasses.index(per_page=sys.maxsize, search={'name='+class_name})['results']
 
             if len(class_info_verbose) > 0:  # if there is such a class
-                class_info_short = class_info_verbose[class_info_verbose.keys()[0]][0]  # this looks really ugly
+                class_info_short = class_info_verbose[list(class_info_verbose.keys())[0]][0]  # this looks really ugly
                 result.append(class_info_short)
             else:
                 raise ForemanError("Class {0} doesn't exist".format(class_name))

@@ -16,6 +16,7 @@ import socket
 import scp
 import logging
 import signal
+import shlex
 
 class Bcolors:
     HEADER = '\033[95m'
@@ -253,7 +254,11 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
 
         for command_arg in self._command_args:
             self._ssh_command += command_arg + ' '
+
         self._ssh_command = self._ssh_command[:-1]
+        # DEBUG PRINT
+        print("command_args: {0}".format(self._command_args))
+        print("ssh command: {0}".format(self._ssh_command))
 
         if self._command == 'dist':
             if len(self._command_args) > 1:
