@@ -15,6 +15,7 @@ setup(name='swk',
       author="Pavel Gurkov",
       author_email="true.neu@gmail.com",
       url='https://github.com/trueneu/swiss-knife',
+      download_url='https://github.com/trueneu/swiss-knife/archive/v0.0.4a3.zip',
       packages=find_packages(),
       license='GPLv3',
       platforms='Posix; MacOS X',
@@ -41,7 +42,10 @@ setup(name='swk',
           'scp>=0.10.2',
           'pypsi>=1.3.0'
       ],
-      long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running',
+      long_description='''
+An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
+with parallel ssh out of the box.
+''',
       entry_points={
           'console_scripts': [
               'swk = swk.swk_main:main'

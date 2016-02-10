@@ -45,7 +45,7 @@ class SwissKnife(object):
         
         self._logging_init()
 
-        self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins").split()]
+        self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins", "").split()]
 
         self._cache_directory_expanded = os.path.abspath(os.path.expanduser(self._config["Main"].get("cache_directory",
                                                                                                   "~/.swk")))
