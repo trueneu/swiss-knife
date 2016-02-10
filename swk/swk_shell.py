@@ -17,7 +17,7 @@ from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
 class SWKShellCmdlinePP(Plugin):
     def __init__(self, preprocess=80, postprocess=None, **kwargs):
         super(SWKShellCmdlinePP, self).__init__(preprocess=preprocess,
-                                               postprocess=postprocess, **kwargs)
+                                                postprocess=postprocess, **kwargs)
 
     def setup(self, shell):
         pass
@@ -26,20 +26,76 @@ class SWKShellCmdlinePP(Plugin):
         if origin != 'input':
             return tokens
 
+        # I really have to return here to Meily's variant with detecting "the end of command" case
+        # collect cmd, hostlist, and pass the quoted argument
+        # and then shlex it on the other side with unquoting there
+
         result = []
+        i = 0
+
+        cmd = None
+        hostlist = None
+        arg = ''
         i = 0
         for (i, token) in enumerate(tokens):
             if isinstance(token, StringToken):
-                if token.quote == "'":
-                    result.append(StringToken(i, "{quote}{s}{quote}".format(
-                        quote=token.quote or '',
-                        s=token.text.replace('\\', '\\\\\\')), quote=None))
+                # We only really care about string tokens
+                if cmd:
+                    if cmd.text in shell.enabled_builtin_pypsi_cmds.keys():
+                        result.append(token)
+                    else:
+                        if hostlist:
+                            arg += "{quote}{s}{quote}".format(
+                                quote=token.quote or '',
+                                s=token.text.replace('\\', '\\\\\\')
+                            )
+                        else:
+                            result.append(token)
+                            hostlist = token
                 else:
-                    result.append(StringToken(i, "{quote}{s}{quote}".format(
-                        quote=token.quote or '',
-                        s=token.text), quote=None))
-            else:
+                    # The first string token we see is the actual command we
+                    # need to execute
+                    result.append(token)
+                    cmd = token
+
+            elif isinstance(token, WhitespaceToken):
+                if arg:
+                    # append the whitespace
+                    arg += ' '
+                elif cmd:
+                    # We need whitespace between the command and the arguments
+                    # so add it here
+                    result.append(token)
+
+            elif isinstance(token, OperatorToken):
+                if token.operator in ('&&', '|', '||', ';', '>', '<'):
+                    # We found a chainning operator so start over
+                    cmd = None
+                    hostlist = None
+                    if arg:
+                        result.append(StringToken(i, arg))
+                        arg = ''
                 result.append(token)
+
+            else:
+                # Unknown token
+                result.append(token)
+
+        if arg:
+            result.append(StringToken(i+1, arg))
+
+#        for (i, token) in enumerate(tokens):
+#            if isinstance(token, StringToken):
+#                if token.quote == "'":
+#                    result.append(StringToken(i, "{s}".format(s=token.text.replace('\\', '\\\\\\')), quote=token.quote))
+#                else:
+#                    result.append(token)
+#                else:
+#                    result.append(StringToken(i, "{quote}{s}{quote}".format(
+#                        quote=token.quote or '',
+#                        s=token.text), quote=token.quote))
+#            else:
+#                result.append(token)
 
         return result
 
@@ -72,12 +128,6 @@ class SWKCommand(Command):
         sys.stderr.write(diemsg + '\n')
 
     def run(self, shell, args):
-        #DEBUG PRINT
-        #print(args)
-        #self._hostlist = ""
-        #self._command_args = list()
-        #self._expanded_hostlist = list()
-
         self._cwd = os.getcwd()
 
         if self._command_module.requires_hostlist(self._command_name):
@@ -123,11 +173,12 @@ class SWKShell(Shell):
     pwd_cmd = PwdCommand()
     cd_cmd = SWKChdirCommand()
     system_cmd = SystemCommand(name='sys')
-    #swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
-    history_plugin = HistoryPlugin()
-    history_command = HistoryCommand(name='hist')
-    help_forward_dict = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
-
+    history_plugin = HistoryPlugin(history_cmd='hist')
+    history_cmd = HistoryCommand(name='hist')
+    enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_cmd}
+    history_file_path = "~/.swk/.history"
+    history_file_path_expanded = os.path.expanduser(history_file_path)
+    swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
     def __init__(self, swk_instance):
         try:
             _, columns = os.popen('stty size 2>/dev/null', 'r').read().split()
@@ -135,6 +186,13 @@ class SWKShell(Shell):
             columns = 80
         super(SWKShell, self).__init__(shell_name='swk', width=int(columns))
         self.prompt = swk_shell_prompt.format(os.getcwd())
+
+    def on_cmdloop_begin(self):
+        if os.path.exists(self.history_file_path_expanded):
+            self.history_cmd.run(self, ['load', '{0}'.format(self.history_file_path_expanded)])
+
+    def on_cmdloop_end(self):
+        self.history_cmd.run(self, ['save', '{0}'.format(self.history_file_path_expanded)])
 
 
 class SWKShellPrepare:
@@ -153,7 +211,7 @@ class SWKShellHelp(Command):
 
     def run(self, shell, args):
         builtin_commands_string = ""
-        for builtin_command in sorted(shell.help_forward_dict.keys()):
+        for builtin_command in sorted(shell.enabled_builtin_pypsi_cmds.keys()):
             builtin_commands_string += builtin_command + ', '
         builtin_commands_string = builtin_commands_string[:-2]
         if len(args) == 0:
@@ -162,8 +220,8 @@ class SWKShellHelp(Command):
             sys.stdout.write("\nFor verbose help, please run 'help <command_name>' or 'help <parser_modifier>'\n")
             return
         help_topic_name = args[0]
-        if help_topic_name in shell.help_forward_dict.keys():
-            sys.stdout.write("{0}\n".format(shell.help_forward_dict[help_topic_name].brief))
+        if help_topic_name in shell.enabled_builtin_pypsi_cmds.keys():
+            sys.stdout.write("{0}\n".format(shell.enabled_builtin_pypsi_cmds[help_topic_name].brief))
             return
         try:
             sys.stdout.write(self._swk_instance._available_commands[help_topic_name].get_command_help(help_topic_name))

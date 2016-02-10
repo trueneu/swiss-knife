@@ -16,6 +16,7 @@ import socket
 import scp
 import logging
 import signal
+import shlex
 
 class Bcolors:
     HEADER = '\033[95m'
@@ -148,9 +149,6 @@ def paramiko_exec_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, 
 
 
 def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
-    #DEBUG PRINT
-    #print(cmd)
-
     connect_error_exit_code = 254
     host = paramiko_thread_config['hostname']
 
@@ -249,10 +247,11 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
         self._ssh_command = ""
 
         if len(self._command_args) == 0:
-            raise swk_classes.SWKCommandError("Insufficient arguments.")
+            raise SSHPluginError("Insufficient arguments.")
 
         for command_arg in self._command_args:
             self._ssh_command += command_arg + ' '
+
         self._ssh_command = self._ssh_command[:-1]
 
         if self._command == 'dist':

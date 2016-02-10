@@ -2,9 +2,11 @@
 An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
 with parallel ssh out of the box.
 
+Destroying all your databases at once has never been this simple!
 ```
-swk pssh ^mysql "mysql -e 'start slave;'"
+swk pssh ^mysql 'rm -rf /var/lib/mysql'
 ```
+(yeah, you really shouldn't do that in production environment. Unless...)
 
 ### What can it do?
 The basic idea is: you specify what to do (a command), a list of hosts or hostgroups to do that with, and
@@ -30,7 +32,11 @@ pip install <some_path>/swk_plugins/swk_foreman_plugin
 pip install <some_path>/swk_plugins/swk_zabbix_plugin
 ```
 
+Installation script will also create **~/.swk** directory, where you should find **swk.ini** configuration
+file, and that's used to store shell mode command history, program's log, various plugins' cache, etc.
+
 Please note that you should use python3.2+ for shell mode to work.
+
 
 ### Usage
 Typical usage looks like
@@ -49,19 +55,24 @@ generate strings that match it and use it as hosts. If you're excluding hosts th
 
 will execute `echo Yay` in parallel fashion on each host that's in zabbix hostgroup `g1` except hosts `host1`, `host2`, `host3` and `host4`.
 
-### Bundled modules (plugins)
+### Available and bundled plugins
 From the box, swk supports:
-- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - running commands over ssh (`ssh` and `pssh` commands), copying files over ssh to multiple hosts
 (`dist` command, recursive and without preserving times by default), copying files from multiple
 hosts over ssh (`gather`)
+- and just displaying results of hostlist expansion (`dr` for 'dry-run')
+
+By installing additional packages named `swk_*_plugin`, you also get
+- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - getting and setting hosts environments in **Foreman** (`getenv`
 and `setenv` commands), getting, adding and removing classes linked to hosts and hostgroups (`getcls`, `addcls`,
 `rmcls`, `getgcls`, `addgcls`, `rmgcls` respectively), and listing available classes (`lscls`)
-- and just displaying results of hostlist expansion (`dr` for 'dry-run')
+- expanding **casp** hostgroups (those are really Foreman's, but casp's API is simpler and faster. However,
+I really doubt you have **casp** installed)
 
-**By default, all the modules but `dr` and `ssh` are not installed.**
 To install them, please refer to [Installation](#Installation) section above.
+
+Hopefully, there are more coming.
 
 ### Examples
 Imagine that you need to grep all your frontend nginx logs for string '/api/do_something'. Your frontend hostnames
@@ -113,7 +124,7 @@ the access.log files, appending a suffix so you can tell from which host each lo
 
 Say you have a Zabbix installation in your environment, and all the frontends are in 'frontend' hostgroup.
 You can do the same as above using zabbix hostgroup expansion (note that `zabbix` module is disabled by
- default. More on that in [bundled modules](#bundled-modules-plugins) section above)
+ default. More on that in [Available plugins](#available-and-bundled-plugins) section above)
 
 ```swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production```
 
@@ -148,11 +159,11 @@ trueneu$ swk
 swk>
 ```
 
-You can absolutely all the same like in command line mode, but shell mode has a few advantages:
+You can do absolutely all the same like in command line mode, but shell mode has a few advantages:
 
-- you don't need to think about quote escaping in tricky commands, because everything inside quotes is
-treated literally
-- it supports tab completion
+- you don't need to think about quote escaping in tricky commands, because the arguments
+are treated literally even if not quoted
+- tab completion command support thanks to `pypsi`
 
 For example, that ugly mysql example above would look like this in shell mode:
 
@@ -162,23 +173,41 @@ swk> pssh ^mysql mysql -e 'show variables like "read_only"'
 
 If you want, you may call any system utility from inside `swk` shell via `sys` command:
 ```
-swk> pssh ^mysql mysql -e 'show variables like "%format%" | sys grep innodb'
+swk> pssh ^mysql mysql -e 'show variables like "%format%"' | sys grep innodb
 ```
 
-It also supports history through `history` command, etc.
-
+It also supports history through `hist` command, etc.
 
 ### Details
-#TODO rewrite this section
+Commands, hostgroup modifiers and parsers code are defined through swk plugins. They can be connected
+to the main program in three ways: being included in main package under **swk/swk_plugins** dir,
+having a defined **swk_plugin** entry point in their setup.py and installed or just being put in
+one of **plugins_directories** dir from **swk.ini** file.
 
-All the commands, hostgroup modifiers and parsers code is defined through plugins in **sk-modules** dir.
-You can define your own rather easily.
-You can find some working modules there mentioned above, as well as dummy examples in **sk-modules/sk-modules-examples** .
-Further help can be found in **sk_classes.py**, which you should import when defining your own command and/or parser modules.
+You can find some working plugins there mentioned above, as well as dummy examples in **swk_plugins_examples** .
+Further help can be found in **swk/swk_classes.py**, which you MUST import when defining your own
+command and/or parser modules.
 
-For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist,
+For example, if you use Nagios in your environment, you can create a parser that will expand a Nagios hostgroup into a hostlist,
 or a command that will take a Nagios hostgroup and do something with it using Nagios API (say, downtime it or something).
-Information that's used for modules to work (such as authentication information for various APIs) may (and should) be stored in config named **sk.ini**.
+Information that's used for modules to work (such as authentication information for various APIs) may (and should)
+be stored in config named **swk.ini**.
+
+###### Shell mode parsing details
+When in shell mode, every argument starting with the third *to the end of the line* is passed literally
+even if not quoted except for built-in `pypsi` commands (that includes `pwd`, `cd`, `sys` etc,
+full list can be found via `help` command in shell mode). It sounds a little bit confusing at first,
+but it has its benefits. You do not need to escape backslash character, and you don't need the
+outer level of quoting when ssh`ing this way.
+
+Trade-offs:
+- you have to implement your own argument parsing in command plugins for them
+to work correctly (using a whitespace or something else as a delimiter).
+- you have to escape chaining/io redirection characters for those to be passed
+as arguments to commmand
+instead of work locally. For example, `ssh remote echo ABC > file` creates `file` on local machine, but
+ `ssh remote echo ABC \> file` does the same on remote.
+
 
 ### Why did I do this and why you may need this?
 I did it simply because there was no such instruments in my environment, and I needed them from time to time.
@@ -197,12 +226,12 @@ a little bit of python
 
 ### Known issues and notes
 
-As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important
+As this is an alpha version, author wouldn't recommend to think of `swk` as of a reliable tool suitable for running important
 (say, potentially destructive) tasks. i.e. restarting/reinstalling important services,
 `sed`ing mission critical configs, etc. Always double-check command's result on one host before applying it to whole production,
 use `dr` command.
 
-There may be some issues with configparser. If there are, please notify me. In fact, there may be issues with anything.
+
 
 The code itself should work on python2.7+, python3.2+.
 
@@ -211,13 +240,15 @@ The code itself should work on python2.7+, python3.2+.
 - currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
 left bracket will be treated as a hostgroup modifier.
 - ssh module needs a running ssh-agent with private keys added, or private keys need to remain password free
-- username for ssh specified in sk.ini will override your current username and username from .ssh/config if present
+- username for ssh specified in **swk.ini** will override your current username and username from .ssh/config if present
+- Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks from multiprocessing)
+- interactive user input is NOT supported when running a command
 
 ###### Dev notes
 
-- if a parser doesn't return any hosts, its job is considered failed and program stops
-- all the information needed to run a command is added to class attributes, more info on that in **sk_classes**
-- all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for sk program
+- if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
+- all the information needed to run a command is added to class attributes, more info on that in **swk_classes**
+- all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for swk program
 - `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
 ##### Dependencies
@@ -236,7 +267,6 @@ left bracket will be treated as a hostgroup modifier.
     [python-foreman](https://github.com/david-caro/python-foreman)
 
 ### Contributions
-Please do! Don't forget to exclude sensitive details from `swk.ini` and change `SwissKnife`
-`_environment` attribute to `production` when pushing.
+Please do! Don't forget to exclude sensitive details from `swk.ini`.
 
 (c) Pavel "trueneu" Gurkov, 2016

@@ -44,7 +44,7 @@ setup(name='swk',
       long_description='Please use pip install swk -r requirements_all.txt to get all plugins up and running',
       entry_points={
           'console_scripts': [
-              'swk = swk.swk:main'
+              'swk = swk.swk_main:main'
           ],
       },
       data_files=[

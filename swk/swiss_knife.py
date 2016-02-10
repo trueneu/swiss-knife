@@ -38,8 +38,6 @@ class SwissKnife(object):
     _swk_config_path = "~/.swk/swk.ini"
 
     def __init__(self, **kwargs):
-        # DEBUG PRINT
-        #print(sys.argv)
         for k, v in kwargs.items():
             setattr(self, "_{0}".format(k), v)
 
@@ -255,9 +253,6 @@ class SwissKnife(object):
         result['hostlist'] = args.hostlist
 
         result['command_args'] = args.command_args
-
-        #DEBUG PRINT
-        #print(result['command_args'])
 
         return result
 
