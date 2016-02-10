@@ -148,11 +148,11 @@ trueneu$ swk
 swk>
 ```
 
-You can absolutely all the same like in command line mode, but shell mode has a few advantages:
+You can do absolutely all the same like in command line mode, but shell mode has a few advantages:
 
-- you don't need to think about quote escaping in tricky commands, because everything inside quotes is
-treated literally
-- it supports tab completion
+- you don't need to think about quote escaping in tricky commands, because the arguments
+are treated literally even if not quoted
+- tab completion command support thanks to `pypsi`
 
 For example, that ugly mysql example above would look like this in shell mode:
 
@@ -162,23 +162,41 @@ swk> pssh ^mysql mysql -e 'show variables like "read_only"'
 
 If you want, you may call any system utility from inside `swk` shell via `sys` command:
 ```
-swk> pssh ^mysql mysql -e 'show variables like "%format%" | sys grep innodb'
+swk> pssh ^mysql mysql -e 'show variables like "%format%"' | sys grep innodb
 ```
 
-It also supports history through `history` command, etc.
-
+It also supports history through `hist` command, etc.
 
 ### Details
-#TODO rewrite this section
+Commands, hostgroup modifiers and parsers code are defined through swk plugins. They can be connected
+to the main program in three ways: being included in main package under **swk/swk_plugins** dir,
+having a defined **swk_plugin** entry point in their setup.py and installed or just being put in
+one of **plugins_directories** dir from `swk.ini` file.
 
-All the commands, hostgroup modifiers and parsers code is defined through plugins in **sk-modules** dir.
-You can define your own rather easily.
-You can find some working modules there mentioned above, as well as dummy examples in **sk-modules/sk-modules-examples** .
-Further help can be found in **sk_classes.py**, which you should import when defining your own command and/or parser modules.
+You can find some working plugins there mentioned above, as well as dummy examples in **swk_plugins_examples** .
+Further help can be found in **swk/swk_classes.py**, which you MUST import when defining your own
+command and/or parser modules.
 
-For example, if you use Nagios in your environment, you can write a parser that will expand a Nagios hostgroup into a hostlist,
+For example, if you use Nagios in your environment, you can create a parser that will expand a Nagios hostgroup into a hostlist,
 or a command that will take a Nagios hostgroup and do something with it using Nagios API (say, downtime it or something).
-Information that's used for modules to work (such as authentication information for various APIs) may (and should) be stored in config named **sk.ini**.
+Information that's used for modules to work (such as authentication information for various APIs) may (and should)
+be stored in config named **swk.ini**.
+
+###### Shell mode parsing details
+When in shell mode, every argument starting with the third *to the end of the line* is passed literally
+even if not quoted except for built-in `pypsi` commands (that includes `pwd`, `cd`, `sys` etc,
+full list can be found via `help` command in shell mode). It sounds a little bit confusing at first,
+but it has its benefits. You do not need to escape backslash character, and you don't need the
+outer level of quoting when ssh`ing this way.
+
+Trade-offs:
+- you have to implement your own argument parsing in command plugins for them
+to work correctly (using a whitespace or something else as a delimiter).
+- you have to escape chaining/io redirection characters for those to be passed
+as arguments to commmand
+instead of work locally. For example, `ssh remote echo ABC > file` creates `file` on local machine, but
+ `ssh remote echo ABC \> file` does the same on remote.
+
 
 ### Why did I do this and why you may need this?
 I did it simply because there was no such instruments in my environment, and I needed them from time to time.
@@ -197,12 +215,12 @@ a little bit of python
 
 ### Known issues and notes
 
-As this is an alpha version, author wouldn't recommend to think of sk as of a reliable tool suitable for running important
+As this is an alpha version, author wouldn't recommend to think of `swk` as of a reliable tool suitable for running important
 (say, potentially destructive) tasks. i.e. restarting/reinstalling important services,
 `sed`ing mission critical configs, etc. Always double-check command's result on one host before applying it to whole production,
 use `dr` command.
 
-There may be some issues with configparser. If there are, please notify me. In fact, there may be issues with anything.
+
 
 The code itself should work on python2.7+, python3.2+.
 
@@ -211,13 +229,15 @@ The code itself should work on python2.7+, python3.2+.
 - currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
 left bracket will be treated as a hostgroup modifier.
 - ssh module needs a running ssh-agent with private keys added, or private keys need to remain password free
-- username for ssh specified in sk.ini will override your current username and username from .ssh/config if present
+- username for ssh specified in swk.ini will override your current username and username from .ssh/config if present
+- Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks from multiprocessing)
+- interactive user input is NOT supported when running a command
 
 ###### Dev notes
 
-- if a parser doesn't return any hosts, its job is considered failed and program stops
-- all the information needed to run a command is added to class attributes, more info on that in **sk_classes**
-- all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for sk program
+- if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
+- all the information needed to run a command is added to class attributes, more info on that in **swk_classes**
+- all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for swk program
 - `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
 ##### Dependencies

@@ -149,9 +149,6 @@ def paramiko_exec_thread_run_keyboard_interrupt_wrapper(paramiko_thread_config, 
 
 
 def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
-    #DEBUG PRINT
-    #print(cmd)
-
     connect_error_exit_code = 254
     host = paramiko_thread_config['hostname']
 
@@ -250,15 +247,12 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
         self._ssh_command = ""
 
         if len(self._command_args) == 0:
-            raise swk_classes.SWKCommandError("Insufficient arguments.")
+            raise SSHPluginError("Insufficient arguments.")
 
         for command_arg in self._command_args:
             self._ssh_command += command_arg + ' '
 
         self._ssh_command = self._ssh_command[:-1]
-        # DEBUG PRINT
-        print("command_args: {0}".format(self._command_args))
-        print("ssh command: {0}".format(self._ssh_command))
 
         if self._command == 'dist':
             if len(self._command_args) > 1:

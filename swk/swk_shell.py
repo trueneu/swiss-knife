@@ -68,7 +68,7 @@ class SWKShellCmdlinePP(Plugin):
                     result.append(token)
 
             elif isinstance(token, OperatorToken):
-                if token.operator in ('&&', '|', '||', ';'):
+                if token.operator in ('&&', '|', '||', ';', '>', '<'):
                     # We found a chainning operator so start over
                     cmd = None
                     hostlist = None
@@ -128,12 +128,6 @@ class SWKCommand(Command):
         sys.stderr.write(diemsg + '\n')
 
     def run(self, shell, args):
-        #DEBUG PRINT
-        #print(args)
-        #self._hostlist = ""
-        #self._command_args = list()
-        #self._expanded_hostlist = list()
-
         self._cwd = os.getcwd()
 
         if self._command_module.requires_hostlist(self._command_name):
@@ -179,10 +173,11 @@ class SWKShell(Shell):
     pwd_cmd = PwdCommand()
     cd_cmd = SWKChdirCommand()
     system_cmd = SystemCommand(name='sys')
-    history_plugin = HistoryPlugin()
-    history_command = HistoryCommand(name='hist')
-    enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_command}
-
+    history_plugin = HistoryPlugin(history_cmd='hist')
+    history_cmd = HistoryCommand(name='hist')
+    enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_cmd}
+    history_file_path = "~/.swk/.history"
+    history_file_path_expanded = os.path.expanduser(history_file_path)
     swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
     def __init__(self, swk_instance):
         try:
@@ -191,6 +186,13 @@ class SWKShell(Shell):
             columns = 80
         super(SWKShell, self).__init__(shell_name='swk', width=int(columns))
         self.prompt = swk_shell_prompt.format(os.getcwd())
+
+    def on_cmdloop_begin(self):
+        if os.path.exists(self.history_file_path_expanded):
+            self.history_cmd.run(self, ['load', '{0}'.format(self.history_file_path_expanded)])
+
+    def on_cmdloop_end(self):
+        self.history_cmd.run(self, ['save', '{0}'.format(self.history_file_path_expanded)])
 
 
 class SWKShellPrepare:
@@ -209,7 +211,7 @@ class SWKShellHelp(Command):
 
     def run(self, shell, args):
         builtin_commands_string = ""
-        for builtin_command in sorted(shell.help_forward_dict.keys()):
+        for builtin_command in sorted(shell.enabled_builtin_pypsi_cmds.keys()):
             builtin_commands_string += builtin_command + ', '
         builtin_commands_string = builtin_commands_string[:-2]
         if len(args) == 0:
@@ -218,8 +220,8 @@ class SWKShellHelp(Command):
             sys.stdout.write("\nFor verbose help, please run 'help <command_name>' or 'help <parser_modifier>'\n")
             return
         help_topic_name = args[0]
-        if help_topic_name in shell.help_forward_dict.keys():
-            sys.stdout.write("{0}\n".format(shell.help_forward_dict[help_topic_name].brief))
+        if help_topic_name in shell.enabled_builtin_pypsi_cmds.keys():
+            sys.stdout.write("{0}\n".format(shell.enabled_builtin_pypsi_cmds[help_topic_name].brief))
             return
         try:
             sys.stdout.write(self._swk_instance._available_commands[help_topic_name].get_command_help(help_topic_name))

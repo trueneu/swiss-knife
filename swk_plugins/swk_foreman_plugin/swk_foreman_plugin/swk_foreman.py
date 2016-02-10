@@ -72,9 +72,6 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
         self._all_hosts_info = list()
         self._all_classes_info = list()
 
-        #DEBUG PRINT
-        print("command_args: {0}".format(self._command_args))
-
     def _foreman_api_init(self):
         return Foreman(self._foreman_url, (self._user, self._password), verify=self._verify_ssl_boolean, api_version=2)
 
