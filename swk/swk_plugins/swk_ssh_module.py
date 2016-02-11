@@ -333,6 +333,7 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
 
     def _print_results_summary(self):
         failed_hosts = ""
+        failed_hosts_no_whitespace = ""
         failed_hosts_present = False
 
         for result in self._results:
@@ -343,16 +344,17 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
                 self._exit_statuses[exit_status] += ", " + host
             if exit_status != 0:
                 failed_hosts += host + ", "
+                failed_hosts_no_whitespace += host + ","
                 failed_hosts_present = True
 
-        failed_hosts = failed_hosts[:-2]
-
+        failed_hosts_no_whitespace = failed_hosts_no_whitespace[:-1]
         if failed_hosts_present:
             sys.stdout.write("\n===\nFailed hosts (exit_status: hosts):\n")
             for k, v in self._exit_statuses.items():
                 if k != 0:
                     sys.stdout.write("%s: %s;\n" % (str(k), str(v)))
-            fix_command = "\nFix: {0} {1} {2} {3}\n".format(self._swk_path, self._command, failed_hosts, self._ssh_command)
+            fix_command = "\nFix: {0} {1} {2} {3}\n".format(self._swk_path, self._command, failed_hosts_no_whitespace,
+                                                            self._ssh_command)
             sys.stdout.write(fix_command)
 
     def _run(self):

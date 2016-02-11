@@ -6,7 +6,7 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see swk for more information on License and contacts
 """
 import abc
-
+import shlex
 
 class SWKPlugin():
     __metaclass__  = abc.ABCMeta
@@ -21,8 +21,21 @@ class SWKCommandPlugin(SWKPlugin):
     _commands = dict()
     _commands_help_message = ""
 
+    def _shlex_quoting_split(self, string):
+        lex = shlex.shlex(string)
+        lex.quotes = "'"
+        lex.whitespace_split = True
+        lex.commenters = ''
+
+        return list(lex)
+
     def __init__(self, *args, **kwargs):
         super(SWKCommandPlugin, self).__init__(*args, **kwargs)
+        shlex_splitted_command_args = list()
+        for command_arg in self._command_args:
+            # shlex_splitted_command_args.extend(shlex.split(command_arg))
+            shlex_splitted_command_args.extend(self._shlex_quoting_split(command_arg))
+        self._command_args = shlex_splitted_command_args
 
     @classmethod
     def get_commands(cls):

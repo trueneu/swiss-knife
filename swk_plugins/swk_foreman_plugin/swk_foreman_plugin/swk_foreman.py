@@ -12,6 +12,7 @@ from swk.swk_helper_functions import SWKHelperFunctions
 import sys
 import os
 import datetime
+import shlex
 
 class ForemanError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
     def __init__(self, message):
@@ -21,8 +22,8 @@ class ForemanError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
 class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
     _parsers = dict()
     _parsers_help_message = ""
-    _class_delim = ','
-    _delimiter_help_message = "Use {0} as delimiter for classes list in shell mode.\n"
+    #_delimiter_help_message = "Use {0} as delimiter for classes list in shell mode.\n"
+    _delimiter_help_message = ""
 
 
     _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. Arguments: <host expression>\n' + _delimiter_help_message},
@@ -51,14 +52,9 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
 
         return result
 
-    def _parse_class_list(self, class_list):
-        result = list()
-        for foreman_class in class_list:
-            result.extend(foreman_class.split(self._class_delim))
-        return result
-
     def __init__(self, *args, **kwargs):
         super(ForemanPlugin, self).__init__(*args, **kwargs)
+
         self._verify_ssl_boolean = bool(getattr(self, "_verify_ssl", "yes") in ['yes', 'Yes', 'True', 'true'])
 
         if not (self._command == "getgcls" or self._command == "addgcls" or self._command == "rmgcls"):
@@ -163,7 +159,7 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
 
     def _get_classes_short_info(self):
         result = list()
-        class_list = self._parse_class_list(self._command_args)
+        class_list = self._command_args
         for class_name in class_list:
             class_info_verbose = self._fapi.puppetclasses.index(per_page=sys.maxsize, search={'name='+class_name})['results']
 

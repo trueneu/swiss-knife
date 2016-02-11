@@ -12,7 +12,9 @@ import os
 from pypsi.plugins.history import HistoryCommand, HistoryPlugin
 from pypsi.core import Plugin
 from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
-
+from pypsi.os import path_completer
+from pypsi.os import find_bins_in_path
+#from pypsi.plugins.cmd import CmdPlugin
 
 class SWKShellCmdlinePP(Plugin):
     def __init__(self, preprocess=80, postprocess=None, **kwargs):
@@ -176,16 +178,22 @@ class SWKShell(Shell):
     history_plugin = HistoryPlugin(history_cmd='hist')
     history_cmd = HistoryCommand(name='hist')
     enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_cmd}
+    #enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'sys': system_cmd, 'hist': history_cmd}
     history_file_path = "~/.swk/.history"
     history_file_path_expanded = os.path.expanduser(history_file_path)
     swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
+    #cmd_plugin = CmdPlugin(cmd_args=1)
+
     def __init__(self, swk_instance):
         try:
             _, columns = os.popen('stty size 2>/dev/null', 'r').read().split()
         except ValueError:  # we're not running in a terminal
             columns = 80
         super(SWKShell, self).__init__(shell_name='swk', width=int(columns))
+        self.fallback_cmd = self.system_cmd
         self.prompt = swk_shell_prompt.format(os.getcwd())
+        self._sys_bins = None
+        #self.path_completer = path_completer
 
     def on_cmdloop_begin(self):
         if os.path.exists(self.history_file_path_expanded):
@@ -193,6 +201,15 @@ class SWKShell(Shell):
 
     def on_cmdloop_end(self):
         self.history_cmd.run(self, ['save', '{0}'.format(self.history_file_path_expanded)])
+
+    def get_command_name_completions(self, prefix):
+        if not self._sys_bins:
+            self._sys_bins = find_bins_in_path()
+
+        return sorted(
+            [name for name in self.commands if name.startswith(prefix)] +
+            [name for name in self._sys_bins if name.startswith(prefix)]
+        )
 
 
 class SWKShellPrepare:

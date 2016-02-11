@@ -1,8 +1,5 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
-SSH: fix ssh fix stub cmddisplay (whitespaces)
-SSH: broke gather and scp in shell with quoted args. consider using shlex
-FRMN: probably using shlex will be enough to get rid of delimiter
 
 Improvements
 SSH: refactor the ssh module. it's very, very ugly.
@@ -13,6 +10,8 @@ FRMN: add new host/clone host to foreman plugin
 SSH: gather/scp ~ expansion
 SSH: gather doesn't rename if it's just one host
 SHELL: look into file path completion pypsi
+SHELL: tab completion for hosts and/or hostgroups
+SSH: rename ssh and pssh into exe and pexe to avoid shadowing
 
 Re-do
 SSH: try to use fabric in ssh module?
