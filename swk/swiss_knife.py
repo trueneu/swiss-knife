@@ -21,6 +21,7 @@ import sys
 import exrex
 import pkg_resources
 from swk import version
+import shutil
 
 shell_mode_off = False
 try:
@@ -37,12 +38,32 @@ class SwissKnife(object):
     _version = version.__version__
 
     swk_plugin_dir_default = "plugins"
-    _swk_config_path = "~/.swk/swk.ini"
+    _swk_config_path = "~/.swk/"
+    _swk_config_filename = "swk.ini"
+    _swk_config_full_path = os.path.join(os.path.expanduser(_swk_config_path), _swk_config_filename)
+
+    def _write_default_config(self):
+        if not os.path.isdir(os.path.dirname(self._swk_config_full_path)):
+            try:
+                os.mkdir(os.path.dirname(self._swk_config_full_path))
+            except IOError:
+                msg = "Couldn't create directory {path}, aborting.".format(
+                    path=os.path.dirname(self._swk_config_full_path))
+                self._die(msg)
+
+        if not os.path.isfile(self._swk_config_full_path):
+            try:
+                shutil.copy(os.path.join(os.path.dirname(classes.__file__), self._swk_config_filename),
+                            self._swk_config_full_path)
+            except IOError:
+                msg = "Couldn't create default config at {path}, aborting.".format(path=self._swk_config_full_path)
+                self._die(msg)
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, "_{0}".format(k), v)
 
+        self._write_default_config()
         self._config = self._read_config()
         
         self._logging_init()
@@ -261,9 +282,7 @@ class SwissKnife(object):
     def _read_config(self):
         result = dict()
 
-        #os.chdir(self._swk_dir)
-
-        config_path = os.path.expanduser(self._swk_config_path)
+        config_path = self._swk_config_full_path
         if not os.path.exists(config_path):
             raise exceptions.ConfigNotFoundError("Config file not found: {0}".format(config_path))
 
