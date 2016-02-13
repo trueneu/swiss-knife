@@ -255,13 +255,13 @@ left bracket will be treated as a hostgroup modifier.
 - for main program:
     [exrex](https://github.com/asciimoo/exrex)
     [pypsi](https://github.com/ameily/pypsi)
+- for ssh plugin:
+    [paramiko](https://github.com/paramiko/paramiko)
+    [scp](https://github.com/jbardin/scp.py)
 - for swk-casp plugin:
     [requests](https://github.com/kennethreitz/requests)
 - for swk-zabbix plugin:
     [pyzabbix](https://github.com/lukecyca/pyzabbix)
-- for swk-ssh-module plugin:
-    [paramiko](https://github.com/paramiko/paramiko)
-    [scp](https://github.com/jbardin/scp.py)
 - for swk-foreman plugin:
     [python-foreman](https://github.com/david-caro/python-foreman)
 
