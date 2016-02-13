@@ -19,17 +19,15 @@ Please note that this is *not* `fabric`.
 
 ### Installation
 
-As for now, just download it somewhere, and run
-
 ```
-pip install <some_path>/swk
+pip install swk
 ```
 If you need plugins for casp, Foreman or Zabbix, also run
 
 ```
-pip install <some_path>/swk_plugins/swk_casp
-pip install <some_path>/swk_plugins/swk_foreman
-pip install <some_path>/swk_plugins/swk_zabbix
+pip install swk-casp
+pip install swk-foreman
+pip install swk-zabbix
 ```
 
 Upon first execution `swk`` will create **~/.swk** directory, where you should find **swk.ini** configuration
