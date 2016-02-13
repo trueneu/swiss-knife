@@ -47,12 +47,14 @@ with parallel ssh out of the box with a shell mode.
 
 Examples:
 ::
+
     swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log
     swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production
     swk ssh foohost,barhost,zeehost uptime
 
 Shell mode:
 ::
+
     swk> pssh ^mysql mysql -e 'show variables like "read_only"' >> ./read_only.tmp
     swk> pssh ^mysql mysql -e 'show variables like "%format%"' | grep innodb
 
