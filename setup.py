@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 from os.path import expanduser
 
@@ -8,13 +6,14 @@ with open('swk/version.py') as f:
     exec(f.read(), version)
 
 user_home = expanduser("~")
+url = 'https://github.com/trueneu/swiss-knife'
 
 setup(name='swk',
       version=version['__version__'],
       description='Extendable command line utility for sysadmins',
       author="Pavel Gurkov",
       author_email="true.neu@gmail.com",
-      url='https://github.com/trueneu/swiss-knife',
+      url=url,
       download_url='https://github.com/trueneu/swiss-knife/archive/v0.0.4a3.zip',
       packages=find_packages(),
       license='GPLv3',
@@ -35,7 +34,7 @@ setup(name='swk',
             'Topic :: System :: Shells',
             'Topic :: Utilities'
       ],
-      keywords='cli ssh pssh swiss-knife sysadmin',
+      keywords='cli ssh pssh swiss-knife sysadmin zabbix foreman',
       install_requires=[
           'exrex>=0.9.4',
           'paramiko>=1.16.0',
@@ -44,11 +43,25 @@ setup(name='swk',
       ],
       long_description='''
 An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
-with parallel ssh out of the box.
-''',
+with parallel ssh out of the box with a shell mode.
+
+Examples:
+::
+    swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log
+    swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production
+    swk ssh foohost,barhost,zeehost uptime
+
+Shell mode:
+::
+    swk> pssh ^mysql mysql -e 'show variables like "read_only"' >> ./read_only.tmp
+    swk> pssh ^mysql mysql -e 'show variables like "%format%"' | grep innodb
+
+For more examples, please refer to README at {0}
+
+'''.format(url),
       entry_points={
           'console_scripts': [
-              'swk = swk.swk_main:main'
+              'swk = swk.main:main'
           ],
       },
       data_files=[

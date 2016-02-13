@@ -1,25 +1,25 @@
 """
-swk_foreman_plugin - an swk plugin enabling Foreman API
+swk_foreman - an swk plugin enabling Foreman API
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 from foreman.client import Foreman, ForemanException
-from swk.swk_helper_functions import SWKHelperFunctions
+from swk.helper_functions import SWKHelperFunctions
 import sys
 import os
 import datetime
 import shlex
 
-class ForemanError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
+class ForemanError(classes.SWKParsingError, classes.SWKCommandError):
     def __init__(self, message):
         super(ForemanError, self).__init__(message)
 
 
-class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
+class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     _parsers = dict()
     _parsers_help_message = ""
     #_delimiter_help_message = "Use {0} as delimiter for classes list in shell mode.\n"
@@ -138,7 +138,7 @@ class ForemanPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
         try:
             return self._fapi.environments.show(id=environment)['id']
         except Exception as e:
-            raise swk_classes.SWKCommandError(str(e))
+            raise classes.SWKCommandError(str(e))
 
     def _setenv(self):
         environment = self._command_args[0]

@@ -6,10 +6,10 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 
 
-class CommandPluginExample(swk_classes.SWKCommandPlugin):
+class CommandPluginExample(classes.SWKCommandPlugin):
     _commands = {'command_from_plugin': {'requires_hostlist': False}}
     _commands_help_message = "Example Plugin:\ncommand_from_plugin - do nothing\n"
 

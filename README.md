@@ -4,9 +4,9 @@ with parallel ssh out of the box.
 
 Destroying all your databases at once has never been this simple!
 ```
-swk pssh ^mysql 'rm -rf /var/lib/mysql'
+swk pssh ^mysql 'sudo rm -rf /var/lib/mysql'
 ```
-(yeah, you really shouldn't do that in production environment. Unless...)
+(yeah, you really shouldn't do that in production environment. Unless you're angry and desperate.)
 
 ### What can it do?
 The basic idea is: you specify what to do (a command), a list of hosts or hostgroups to do that with, and
@@ -27,9 +27,9 @@ pip install <some_path>/swk
 If you need plugins for casp, Foreman or Zabbix, also run
 
 ```
-pip install <some_path>/swk_plugins/swk_casp_plugin
-pip install <some_path>/swk_plugins/swk_foreman_plugin
-pip install <some_path>/swk_plugins/swk_zabbix_plugin
+pip install <some_path>/swk_plugins/swk_casp
+pip install <some_path>/swk_plugins/swk_foreman
+pip install <some_path>/swk_plugins/swk_zabbix
 ```
 
 Installation script will also create **~/.swk** directory, where you should find **swk.ini** configuration
@@ -63,13 +63,11 @@ From the box, swk supports:
 hosts over ssh (`gather`)
 - and just displaying results of hostlist expansion (`dr` for 'dry-run')
 
-By installing additional packages named `swk_*_plugin`, you also get
-- expanding **zabbix** hostgroups (`^` modifier), **caspd** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
+By installing additional packages named `swk_<plugin_name>`, you also get
+- expanding **zabbix** hostgroups (`^` modifier), **casp** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - getting and setting hosts environments in **Foreman** (`getenv`
 and `setenv` commands), getting, adding and removing classes linked to hosts and hostgroups (`getcls`, `addcls`,
 `rmcls`, `getgcls`, `addgcls`, `rmgcls` respectively), and listing available classes (`lscls`)
-- expanding **casp** hostgroups (those are really Foreman's, but casp's API is simpler and faster. However,
-I really doubt you have **casp** installed)
 
 To install them, please refer to [Installation](#Installation) section above.
 
@@ -149,7 +147,7 @@ it represents `mysql -e show variables like "read only"`), but
 You can get more info on available parsers, commands and arguments by running `swk -h` .
 
 If you need to change your default SSH user, parallel processes count, API credentials or such,
- take a look at `swk.ini` file.
+ take a look at **swk.ini** file located at **~/.swk** .
 
 ##### Shell mode
 
@@ -160,11 +158,9 @@ trueneu$ swk
 swk>
 ```
 
-You can do absolutely all the same like in command line mode, but shell mode has a few advantages:
-
-- you don't need to think about quote escaping in tricky commands, because the arguments
-are treated literally even if not quoted
-- tab completion command support thanks to `pypsi`
+You can do absolutely all the same like in command line mode, but in shell mode
+you don't need to think about quote escaping in tricky commands, because the arguments
+are treated literally even if not quoted.
 
 For example, that ugly mysql example above would look like this in shell mode:
 
@@ -172,9 +168,9 @@ For example, that ugly mysql example above would look like this in shell mode:
 swk> pssh ^mysql mysql -e 'show variables like "read_only"'
 ```
 
-Additionally, you may call any system utility from inside `swk` shell via `sys` command:
+Additionally, you may call any system utility from inside `swk` shell via `sys` command or even omit `sys`:
 ```
-swk> pssh ^mysql mysql -e 'show variables like "%format%"' | sys grep innodb
+swk> pssh ^mysql mysql -e 'show variables like "%format%"' | grep innodb
 ```
 
 It also supports history through `hist` command, etc. To get help on any command, issue `help <command>` or `help`
@@ -182,12 +178,12 @@ without arguments to get an overview.
 
 ### Details
 Commands, hostgroup modifiers and parsers code are defined through swk plugins. They can be connected
-to the main program in three ways: being included in main package under **swk/swk_plugins** dir,
+to the main program in three ways: being included in main package under **swk/plugins** dir,
 having a defined **swk_plugin** entry point in their setup.py and installed or just being put in
 one of **plugins_directories** dir from **swk.ini** file.
 
 You can find some working plugins there mentioned above, as well as dummy examples in **swk_plugins_examples** .
-Further help can be found in **swk/swk_classes.py**, which you MUST import when defining your own
+Further help can be found in **swk/classes.py**, which you MUST import when defining your own
 command and/or parser modules.
 
 For example, if you use Nagios in your environment, you can create a parser that will expand a Nagios hostgroup into a hostlist,
@@ -197,13 +193,15 @@ be stored in config named **swk.ini**.
 
 ##### Shell mode parsing details
 When in shell mode, every argument starting with the third *to the end of the line* is passed literally
-even if not quoted except for built-in `pypsi` commands (that includes `pwd`, `cd`, `sys` etc,
-full list can be found via `help` command in shell mode). It sounds a little bit confusing at first,
+even if not quoted, backslashes being escaped, and then it's shlexed down to a list respectful to quotes.
+It sounds a little bit confusing at first,
 but it has its benefits. You do not need to escape backslash character, and you don't need the
 outer level of quoting when ssh`ing this way.
 
+Please note that these rules work only for `swk` commands. Everything else is passed as you'd expect.
+
 Trade-offs:
-- you have to implement your own argument parsing in command plugins for them
+- you may have to implement your own argument parsing in command plugins for them
 to work correctly (using a whitespace or something else as a delimiter).
 - you have to escape chaining/io redirection characters for those to be passed
 as arguments to commmand
@@ -233,9 +231,9 @@ As this is an alpha version, author wouldn't recommend to think of `swk` as of a
 `sed`ing mission critical configs, etc. Always double-check command's result on one host before applying it to whole production,
 use `dr` command.
 
+`casp` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
-
-The code itself should work on python2.7+, python3.2+.
+It should work on python2.7+, python3.2+.
 
 ###### Usage notes
 
@@ -251,7 +249,6 @@ left bracket will be treated as a hostgroup modifier.
 - if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
 - all the information needed to run a command is added to class attributes, more info on that in **swk_classes**
 - all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for swk program
-- `caspd` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
 ##### Dependencies
 
@@ -269,6 +266,6 @@ left bracket will be treated as a hostgroup modifier.
     [python-foreman](https://github.com/david-caro/python-foreman)
 
 ### Contributions
-Please do! Don't forget to exclude sensitive details from `swk.ini`.
+Please do! Don't forget to exclude sensitive details from `swk.ini`, if any.
 
 (c) Pavel "trueneu" Gurkov, 2016

@@ -1,26 +1,25 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
 
+Re-do
+SSH: try to use fabric in ssh module?
+
 Improvements
 SSH: refactor the ssh module. it's very, very ugly.
 Zabbix: make mntnce command - maintenance adding/editing in zabbix
 FRMN/ZBX: write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
 FRMN: add get/set/destroy Foreman parameters commands
 FRMN: add new host/clone host to foreman plugin
-SSH: gather/scp ~ expansion
+SSH: gather/scp ~ expansion -- did for local paths
 SSH: gather doesn't rename if it's just one host
 SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
-SSH: rename ssh and pssh into exe and pexe to avoid shadowing
 
-Re-do
-SSH: try to use fabric in ssh module?
 
 General
 - come up with a name convention of module names and such
 - insert logging in plugins
-- remove _plugin suffixes from... well, plugins
 - before pypi: review setup.pys, maybe there's additional info I'd like to add
   insert some brief examples into long_description
   update README, Dependency section ; avail. plugins section (listing caspd twice)
-- include example in readme: pssh xen-trueneu-test[2-5] sudo bash -c "cd /root && git clone http://git.dgvg.ru/trueneu/in-place-utilities.git scripts"
+- include example in readme: pssh xen-trueneu-test[2-5] sudo bash -c "git clone http://git.dgvg.ru/trueneu/in-place-utilities.git /root/scripts"

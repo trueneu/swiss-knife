@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
-setup(name='swk_example_plugin_package',
+setup(name='swk_example_plugin',
       version='1.0',
       packages=find_packages(),
       install_requires=[
@@ -10,7 +8,7 @@ setup(name='swk_example_plugin_package',
       ],
       entry_points={
           'swk_plugin': [
-              'swk_example_plugin = swk_example_plugin_package.swk_command_example:main'
+              'swk_example_plugin = swk_example_plugin.command_example:main'
           ],
       },
       )

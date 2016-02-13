@@ -3,16 +3,16 @@ swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see swk for more information on License and contacts
+see swk/main.py for more information on License and contacts
 """
 
 import logging
 import os
 import glob
 
-from swk import swk_classes
+from swk import classes
 import inspect
-from swk import swk_exceptions
+from swk import exceptions
 import argparse
 import configparser
 import sys
@@ -22,7 +22,7 @@ from swk import version
 
 shell_mode_off = False
 try:
-    from swk import swk_shell
+    import swk.shell
 except SyntaxError:
     logging.warning("swk shell mode has been disabled. Seems like you're using Python 2")
     shell_mode_off = True
@@ -34,7 +34,7 @@ except ImportError:
 class SwissKnife(object):
     _version = version.__version__
 
-    swk_plugin_dir_default = "swk_plugins"
+    swk_plugin_dir_default = "plugins"
     _swk_config_path = "~/.swk/swk.ini"
 
     def __init__(self, **kwargs):
@@ -144,7 +144,7 @@ class SwissKnife(object):
                 except ImportError as e:
                     self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
                 plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
-                                       if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+                                       if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
         os.chdir(oldcwd)
 
         # entry_points imports
@@ -155,7 +155,7 @@ class SwissKnife(object):
                 continue
             module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
-                                       if inspect.isclass(obj) and issubclass(obj, swk_classes.SWKPlugin)])
+                                   if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
 
             #second variant
             """
@@ -169,9 +169,9 @@ class SwissKnife(object):
 
         """then sort them into command modules and parser modules"""
         plugin_command_modules.extend([(name, obj) for (name, obj) in plugin_modules
-                                       if issubclass(obj, swk_classes.SWKCommandPlugin)])
+                                       if issubclass(obj, classes.SWKCommandPlugin)])
         plugin_parser_modules.extend([(name, obj) for (name, obj) in plugin_modules
-                                      if issubclass(obj, swk_classes.SWKParserPlugin)])
+                                      if issubclass(obj, classes.SWKParserPlugin)])
 
         logging.debug("Imported modules")
         logging.debug("All modules: {0}".format(plugin_modules))
@@ -263,7 +263,7 @@ class SwissKnife(object):
 
         config_path = os.path.expanduser(self._swk_config_path)
         if not os.path.exists(config_path):
-            raise swk_exceptions.ConfigNotFoundError("Config file not found: {0}".format(config_path))
+            raise exceptions.ConfigNotFoundError("Config file not found: {0}".format(config_path))
 
         config = configparser.ConfigParser()
         config.read(config_path)
@@ -351,7 +351,7 @@ class SwissKnife(object):
 
             if hostgroup_modifier not in self._available_parsers:
                 if not hostgroup_modifier.isalpha():
-                    raise swk_exceptions.ExpandingHostlistError("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
+                    raise exceptions.ExpandingHostlistError("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
                 else:  # hostgroup is a host or a regex, not a group
                     escaped_hostgroup = self._escape_unsafe_characters(hostgroup)
                     self._die_if_unsafe_characters(escaped_hostgroup)
@@ -366,11 +366,11 @@ class SwissKnife(object):
                 try:
                     hostlist_addition = obj.parse()
                     if len(hostlist_addition) == 0:
-                        raise swk_exceptions.ExpandingHostlistError("Parser {0} didn't return any hosts for hostgroup {1}".format(
+                        raise exceptions.ExpandingHostlistError("Parser {0} didn't return any hosts for hostgroup {1}".format(
                             parser.__name__, hostgroup_remainder
                         ))
-                except swk_classes.SWKParsingError as e:
-                    raise swk_exceptions.ExpandingHostlistError("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
+                except classes.SWKParsingError as e:
+                    raise exceptions.ExpandingHostlistError("Parser {0} died with message: {1}".format(parser.__name__, str(e)))
 
             if not negation:
                 # don't add host twice
@@ -387,15 +387,15 @@ class SwissKnife(object):
             if shell_mode_off:
                 self._die("Please update python to python3+ to run shell mode")
             # this is a very special case
-            swk_shell.SWKShellPrepare(self)
-            shell = swk_shell.SWKShell(self)
+            swk.shell.SWKShellPrepare(self)
+            shell = swk.shell.SWKShell(self)
             exit_status = shell.cmdloop()
             sys.exit(exit_status)
 
         if self._command_requires_hostlist:
             try:
                 expanded_hostlist = self._expand_hostlist()
-            except swk_exceptions.ExpandingHostlistError as e:
+            except exceptions.ExpandingHostlistError as e:
                 self._die(str(e))
         else:
             expanded_hostlist = list()
@@ -414,7 +414,7 @@ class SwissKnife(object):
 
         try:
             obj.run_command()
-        except swk_classes.SWKCommandError as e:
+        except classes.SWKCommandError as e:
             self._die("Command class {0} died with message: {1}".format(self._command_executer_name, str(e)))
         logging.debug("swk finished")
 

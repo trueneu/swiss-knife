@@ -3,13 +3,13 @@ swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../../swk for more information on License and contacts
+see swk/main.py for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 
 
-class DryRunPlugin(swk_classes.SWKCommandPlugin):
+class DryRunPlugin(classes.SWKCommandPlugin):
     _commands = {'dr': {'requires_hostlist': True, 'help': 'Expand the host expression and print the results. Arguments: <host exression>\n'}}
     _commands_help_message = "Dry run Plugin:\ndr - do nothing, just print hostlist\n\n"
 

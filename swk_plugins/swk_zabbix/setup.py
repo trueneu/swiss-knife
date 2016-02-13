@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
 version = {}
-with open('swk_zabbix_plugin/version.py') as f:
+with open('swk_zabbix/version.py') as f:
     exec(f.read(), version)
 
 url = 'https://github.com/trueneu/swiss-knife'
-setup(name='swk_zabbix_plugin',
+setup(name='swk_zabbix',
       version=version['__version__'],
       packages=find_packages(),
       install_requires=[
@@ -42,7 +40,7 @@ setup(name='swk_zabbix_plugin',
       keywords='cli swiss-knife sysadmin zabbix',
       entry_points={
           'swk_plugin': [
-              'swk_zabbix_plugin = swk_zabbix_plugin.swk_zabbix:main'
+              'swk_zabbix = swk_zabbix.zabbix:main'
           ],
       },
       )

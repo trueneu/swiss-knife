@@ -1,23 +1,23 @@
 """
-swk_casp_plugin - an swk plugin enabling casp API
+swk_casp - an swk plugin enabling casp API
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 import requests
 import sys
 import logging
 
 
-class CASPError(swk_classes.SWKParsingError, swk_classes.SWKCommandError):
+class CASPError(classes.SWKParsingError, classes.SWKCommandError):
     def __init__(self, message):
         super(CASPError, self).__init__(message)
 
 
-class CaspPlugin(swk_classes.SWKParserPlugin, swk_classes.SWKCommandPlugin):
+class CaspPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     _parsers = {'%': {'help': 'Expands casp hostgroups. Has a special keyword ALL for all hosts can be found\n'}}
     _parsers_help_message = "%casp_hostgroup, %ALL for all hosts\n"
 

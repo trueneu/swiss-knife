@@ -1,23 +1,23 @@
 """
-swk_foreman_plugin - an swk plugin enabling Zabbix API
+swk_zabbix - an swk plugin enabling Zabbix API
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 import pyzabbix
 import sys
 import logging
 
 
-class ZabbixError(swk_classes.SWKCommandError, swk_classes.SWKParsingError):
+class ZabbixError(classes.SWKCommandError, classes.SWKParsingError):
     def __init__(self, message):
         super(ZabbixError, self).__init__(message)
 
 
-class ZabbixPlugin(swk_classes.SWKCommandPlugin, swk_classes.SWKParserPlugin):
+class ZabbixPlugin(classes.SWKCommandPlugin, classes.SWKParserPlugin):
     _commands = {'lszbx': {'requires_hostlist': False, 'help': 'Lists zabbix hostgroups. Arguments: None\n' }}
     _commands_help_message = "Zabbix plugin:\n" \
                              "lszbx - list zabbix hostgroups\n\n"

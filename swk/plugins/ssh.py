@@ -3,11 +3,11 @@ swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
 
-see ../swk for more information on License and contacts
+see swk/main.py for more information on License and contacts
 """
 
 
-from swk import swk_classes
+from swk import classes
 import paramiko
 import os
 import multiprocessing
@@ -231,12 +231,12 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
     return host, paramiko_channel.recv_exit_status()
 
 
-class SSHPluginError(swk_classes.SWKCommandError):
+class SSHPluginError(classes.SWKCommandError):
     def __init__(self, message):
         super(SSHPluginError, self).__init__(message)
 
 
-class SSHPlugin(swk_classes.SWKCommandPlugin):
+class SSHPlugin(classes.SWKCommandPlugin):
     _commands = {'ssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh host by host. Arguments: <host expression> <command to execute>\n'},
                  'pssh': {'requires_hostlist': True, 'help': 'Executes a command over ssh in parallel fashion. Arguments: <host expression> <command to execute>\n'},
                  'dist': {'requires_hostlist': True, 'help': 'Distributes a file among hosts over ssh. Arguments: <host expression> <file to distribute> <destination path>\n'
@@ -268,14 +268,18 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
             if len(self._command_args) > 1:
                 self._source = self._command_args[:-1]
                 self._dest = self._command_args[-1]
+
+                self._source = [os.path.expanduser(x) for x in self._source]
             else:
                 self._source = self._command_args[0]
                 self._dest = '.'
 
+                self._source = os.path.expanduser(self._source)
+
         if self._command == 'gather':
             self._source = self._command_args[0]
             if len(self._command_args) == 2:
-                self._dest = self._command_args[1]
+                self._dest = os.path.expanduser(self._command_args[1])
                 if os.path.exists(self._dest):
                     if not os.path.isdir(self._dest):
                         raise SSHPluginError("gather command destination can be a directory only.")
@@ -353,7 +357,7 @@ class SSHPlugin(swk_classes.SWKCommandPlugin):
             for k, v in self._exit_statuses.items():
                 if k != 0:
                     sys.stdout.write("%s: %s;\n" % (str(k), str(v)))
-            fix_command = "\nFix: {0} {1} {2} {3}\n".format(self._swk_path, self._command, failed_hosts_no_whitespace,
+            fix_command = "\nFix: {0} {1} {2}\n".format(self._command, failed_hosts_no_whitespace,
                                                             self._ssh_command)
             sys.stdout.write(fix_command)
 

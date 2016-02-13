@@ -6,10 +6,10 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 
 
-class CommandAndParserPluginExample(swk_classes.SWKCommandPlugin, swk_classes.SWKParserPlugin):
+class CommandAndParserPluginExample(classes.SWKCommandPlugin, classes.SWKParserPlugin):
     _commands = {'cmdexample1': {'requires_hostlist': False, 'help': 'cmdexample1 - Example command.\n'}}
     _commands_help_message = "Example Command And Parser Plugin\ncmdexample1 - do nothing\n\n"
     _parsers = {'%': {'help': 'Example parser. Does nothing\n'}}

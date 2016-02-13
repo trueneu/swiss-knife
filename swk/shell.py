@@ -1,9 +1,17 @@
+"""
+swk - A tiny extendable utility for running commands against multiple hosts.
+
+Copyright (C) 2016  Pavel "trueneu" Gurkov
+
+see swk/main.py for more information on License and contacts
+"""
+
 from pypsi.shell import Shell
 from pypsi.core import Command
 import sys
 import logging
-from swk import swk_classes
-from swk import swk_exceptions
+from swk import classes
+from swk import exceptions
 from pypsi.commands.exit import ExitCommand
 from pypsi.commands.pwd import PwdCommand
 from pypsi.commands.chdir import ChdirCommand
@@ -12,9 +20,8 @@ import os
 from pypsi.plugins.history import HistoryCommand, HistoryPlugin
 from pypsi.core import Plugin
 from pypsi.cmdline import StringToken, WhitespaceToken, OperatorToken
-from pypsi.os import path_completer
 from pypsi.os import find_bins_in_path
-#from pypsi.plugins.cmd import CmdPlugin
+
 
 class SWKShellCmdlinePP(Plugin):
     def __init__(self, preprocess=80, postprocess=None, **kwargs):
@@ -43,7 +50,7 @@ class SWKShellCmdlinePP(Plugin):
             if isinstance(token, StringToken):
                 # We only really care about string tokens
                 if cmd:
-                    if cmd.text in shell.enabled_builtin_pypsi_cmds.keys():
+                    if cmd.text not in shell._swk_instance._available_commands.keys():
                         result.append(token)
                     else:
                         if hostlist:
@@ -85,19 +92,6 @@ class SWKShellCmdlinePP(Plugin):
 
         if arg:
             result.append(StringToken(i+1, arg))
-
-#        for (i, token) in enumerate(tokens):
-#            if isinstance(token, StringToken):
-#                if token.quote == "'":
-#                    result.append(StringToken(i, "{s}".format(s=token.text.replace('\\', '\\\\\\')), quote=token.quote))
-#                else:
-#                    result.append(token)
-#                else:
-#                    result.append(StringToken(i, "{quote}{s}{quote}".format(
-#                        quote=token.quote or '',
-#                        s=token.text), quote=token.quote))
-#            else:
-#                result.append(token)
 
         return result
 
@@ -143,10 +137,10 @@ class SWKCommand(Command):
             self._swk_instance._hostlist = self._hostlist
             try:
                 self._expanded_hostlist = self._swk_instance._expand_hostlist()
-            except swk_classes.SWKParsingError as e:
+            except classes.SWKParsingError as e:
                 self._die("Parser error: {0}".format(str(e)))
                 return
-            except swk_exceptions.ExpandingHostlistError as e:
+            except exceptions.ExpandingHostlistError as e:
                 self._die("Expanding hostlist expression error: {0}".format(str(e)))
 
         else:
@@ -154,19 +148,19 @@ class SWKCommand(Command):
 
         self._swk_instance._config[self._command_executer_name] = \
             self._swk_instance._update_config(self._command_executer_name,
-                                             hostlist=self._expanded_hostlist,
-                                             command=self._command_name,
-                                             command_args=self._command_args,
-                                             swk_dir=self._swk_instance._swk_dir,
-                                             swk_path=self._swk_instance._swk_path,
-                                             cwd=self._cwd,
-                                             cache_directory=self._swk_instance._cache_directory_expanded)
+                                              hostlist=self._expanded_hostlist,
+                                              command=self._command_name,
+                                              command_args=self._command_args,
+                                              swk_dir=self._swk_instance._swk_dir,
+                                              swk_path=self._swk_instance._swk_path,
+                                              cwd=self._cwd,
+                                              cache_directory=self._swk_instance._cache_directory_expanded)
 
         logging.info("Executing command with config: {0}".format(self._swk_instance._config[self._command_executer_name]))
         obj = self._command_executer_class(**self._swk_instance._config[self._command_executer_name])
         try:
             obj.run_command()
-        except swk_classes.SWKCommandError as e:
+        except classes.SWKCommandError as e:
             self._die("Command error: {0}".format(str(e)))
 
 
@@ -178,11 +172,9 @@ class SWKShell(Shell):
     history_plugin = HistoryPlugin(history_cmd='hist')
     history_cmd = HistoryCommand(name='hist')
     enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'pwd': pwd_cmd, 'sys': system_cmd, 'cd': cd_cmd, 'hist': history_cmd}
-    #enabled_builtin_pypsi_cmds = {'exit': exit_cmd, 'sys': system_cmd, 'hist': history_cmd}
     history_file_path = "~/.swk/.history"
     history_file_path_expanded = os.path.expanduser(history_file_path)
     swk_shell_preprocessor_plugin = SWKShellCmdlinePP()
-    #cmd_plugin = CmdPlugin(cmd_args=1)
 
     def __init__(self, swk_instance):
         try:
@@ -193,7 +185,7 @@ class SWKShell(Shell):
         self.fallback_cmd = self.system_cmd
         self.prompt = swk_shell_prompt.format(os.getcwd())
         self._sys_bins = None
-        #self.path_completer = path_completer
+        self._swk_instance = swk_instance
 
     def on_cmdloop_begin(self):
         if os.path.exists(self.history_file_path_expanded):

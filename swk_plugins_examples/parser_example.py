@@ -6,10 +6,10 @@ Copyright (C) 2016  Pavel "trueneu" Gurkov
 see https://github.com/trueneu/swiss-knife for more information on License and contacts
 """
 
-from swk import swk_classes
+from swk import classes
 
 
-class ParserPluginExample(swk_classes.SWKParserPlugin):
+class ParserPluginExample(classes.SWKParserPlugin):
     _parsers = {'^': {'help': 'Example parser. Does nothing\n'}}
     _parsers_help_message = "^exampleparser2\n"
 

@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
 version = {}
-with open('swk_foreman_plugin/version.py') as f:
+with open('swk_foreman/version.py') as f:
     exec(f.read(), version)
 
 url = 'https://github.com/trueneu/swiss-knife'
-setup(name='swk_foreman_plugin',
+setup(name='swk_foreman',
       version=version['__version__'],
       packages=find_packages(),
       install_requires=[
@@ -42,7 +40,7 @@ setup(name='swk_foreman_plugin',
       keywords='cli swiss-knife sysadmin foreman',
       entry_points={
           'swk_plugin': [
-              'swk_foreman_plugin = swk_foreman_plugin.swk_foreman:main'
+              'swk_foreman = swk_foreman.foreman:main'
           ],
       },
       )

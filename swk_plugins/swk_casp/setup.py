@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 
 version = {}
-with open('swk_casp_plugin/version.py') as f:
+with open('swk_casp/version.py') as f:
     exec(f.read(), version)
 
 url = 'https://github.com/trueneu/swiss-knife'
-setup(name='swk_casp_plugin',
+setup(name='swk_casp',
       version=version['__version__'],
       packages=find_packages(),
       install_requires=[
@@ -42,7 +40,7 @@ setup(name='swk_casp_plugin',
       keywords='cli swiss-knife sysadmin casp',
       entry_points={
           'swk_plugin': [
-              'swk_casp_plugin = swk_casp_plugin.swk_casp:main'
+              'swk_casp = swk_casp.casp:main'
           ],
       },
       )
