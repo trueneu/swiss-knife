@@ -1,4 +1,6 @@
 """
+A module containing definitions for base plugin classes for swk.
+
 swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
@@ -9,14 +11,14 @@ import abc
 import shlex
 
 
-class SWKPlugin():
+class SWKPlugin(object):
     """
     A base class in SWK plugins hierarchy.
 
     This class is never used neither directly nor when defining plugins.
 
     """
-    __metaclass__  = abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, *args, **kwargs):
         """

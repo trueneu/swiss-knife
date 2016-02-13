@@ -1,4 +1,6 @@
 """
+Main program module.
+
 swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov

@@ -1,4 +1,6 @@
 """
+A module containing exceptions for swk.
+
 swk - A tiny extendable utility for running commands against multiple hosts.
 
 Copyright (C) 2016  Pavel "trueneu" Gurkov
@@ -20,6 +22,7 @@ class OverriddenParserError(Exception):
 class ExpandingHostlistError(Exception):
     def __init__(self, message):
         super(ExpandingHostlistError, self).__init__(message)
+
 
 class ConfigNotFoundError(Exception):
     def __init__(self, message):
