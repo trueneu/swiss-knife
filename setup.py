@@ -67,6 +67,6 @@ For more examples, please refer to README at {0}
           ],
       },
       data_files=[
-          ('{0}/.swk'.format(user_home), ['swk/swk.ini'])
+          ('{0}/.swk'.format(user_home), ['swk.ini'])
       ]
       )
