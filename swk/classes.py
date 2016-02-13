@@ -104,6 +104,7 @@ class SWKCommandPlugin(SWKPlugin):
         This method is called when SWK has done all the preparations and needs the plugin to
         actually execute the command.
 
+        You should redefine it.
         Here you should determine which command is called and process it.
         """
 
@@ -155,6 +156,7 @@ class SWKParserPlugin(SWKPlugin):
         """
         This method is called when SWK needs the plugin to parse a hostlist expression.
 
+        You should redefine it.
         Here you should determine which modifier is used and act accordingly.
 
         :return: Must return list() of hostnames.
@@ -175,7 +177,6 @@ class SWKParsingError(Exception):
         Constructor
 
         :param message: a message to be displayed
-        :return:
         """
         super(SWKParsingError, self).__init__(message)
 
@@ -190,6 +191,5 @@ class SWKCommandError(Exception):
         Constructor
 
         :param message: a message to be displayed
-        :return:
         """
         super(SWKCommandError, self).__init__(message)

@@ -14,7 +14,8 @@ SSH: gather/scp ~ expansion -- did for local paths
 SSH: gather doesn't rename if it's just one host
 SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
-
+SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
+    so plugins are able to call other plugins
 
 General
 - come up with a name convention of module names and such

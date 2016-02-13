@@ -46,7 +46,7 @@ Typical usage looks like
 
 which executes uptime on all the hosts over ssh in parallel fashion.
 
-`%`, `^` and other non-alphabetical characters can be treated as hostgroup modifiers which indicate which parser should expand a given hostgroup into a host list.
+`%`, `^` and other non-alphabetical characters are treated as hostgroup modifiers which indicate which parser should expand a given hostgroup into a host list.
 hyphen (`-`) in front of hostgroup or a host means that hostgroup or host will be excluded from resulting list.
 A host may be a simple regex (no * quantificator or anychar (.), no lookahead/lookbehinds, no commas as comma is a hostgroups separator,
 so no {n,m} style regexes), `swk` will
@@ -183,7 +183,7 @@ having a defined **swk_plugin** entry point in their setup.py and installed or j
 one of **plugins_directories** dir from **swk.ini** file.
 
 You can find some working plugins there mentioned above, as well as dummy examples in **swk_plugins_examples** .
-Further help can be found in **swk/classes.py**, which you MUST import when defining your own
+Further help can be found in **swk.classes**, which you MUST import when defining your own
 command and/or parser modules.
 
 For example, if you use Nagios in your environment, you can create a parser that will expand a Nagios hostgroup into a hostlist,
@@ -226,10 +226,13 @@ a little bit of python
 
 ### Known issues and notes
 
-As this is an alpha version, author wouldn't recommend to think of `swk` as of a reliable tool suitable for running important
-(say, potentially destructive) tasks. i.e. restarting/reinstalling important services,
+As this is an alpha version under development, author wouldn't recommend to think of `swk`
+as of a reliable tool suitable for running important,
+potentially destructive tasks. i.e. restarting/reinstalling important services,
 `sed`ing mission critical configs, etc. Always double-check command's result on one host before applying it to whole production,
 use `dr` command.
+
+No compatibility with future versions is guaranteed yet.
 
 `casp` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 

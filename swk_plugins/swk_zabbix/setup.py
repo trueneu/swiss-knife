@@ -9,7 +9,7 @@ setup(name='swk_zabbix',
       version=version['__version__'],
       packages=find_packages(),
       install_requires=[
-          'swk>=0.0.4a1',
+          'swk>=0.0.4a4',
           'requests>=2.9.1'
       ],
       description='Plugin for swk, enabling Zabbix api',
