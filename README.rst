@@ -30,22 +30,20 @@ Please note that this is *not* ``fabric``.
 Installation
 ~~~~~~~~~~~~
 
-As for now, just download it somewhere, and run
-
 ::
 
-    pip install <some_path>/swk
+    pip install swk
 
 If you need plugins for casp, Foreman or Zabbix, also run
 
 ::
 
-    pip install <some_path>/swk_plugins/swk_casp
-    pip install <some_path>/swk_plugins/swk_foreman
-    pip install <some_path>/swk_plugins/swk_zabbix
+    pip install swk-casp
+    pip install swk-foreman
+    pip install swk-zabbix
 
-Installation script will also create **~/.swk** directory, where you
-should find **swk.ini** configuration file, and that's used to store
+Upon first execution \`swk\`\` will create **~/.swk** directory, where
+you should find **swk.ini** configuration file, and that's used to store
 shell mode command history, program's log, various plugins' cache, etc.
 
 Please note that you should use python3.2+ for shell mode to work.
