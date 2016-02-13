@@ -1,12 +1,34 @@
 from setuptools import setup, find_packages
-from os.path import expanduser
+from os import symlink
+import os.path
+from setuptools.command.install import install
+import warnings
 
 version = {}
 with open('swk/version.py') as f:
     exec(f.read(), version)
 
-user_home = expanduser("~")
 url = 'https://github.com/trueneu/swiss-knife'
+
+
+class SymlinkConfig(install):
+    def run(self):
+        install.run(self)
+        try:
+            import swk
+            filename = "swk.ini"
+            user_home = os.path.expanduser("~")
+            target_dir = "{user_home}/.swk/".format(user_home=user_home)
+            try:
+                os.unlink(os.path.join(os.path.dirname(target_dir), filename))
+            except:
+                pass
+
+            symlink(os.path.join(os.path.dirname(swk.__file__), filename),
+                    os.path.join(os.path.dirname(target_dir), filename))
+        except:
+            warnings.warn("WARNING: An issue occured while symlinking config file to $HOME/.swk .")
+
 
 setup(name='swk',
       version=version['__version__'],
@@ -66,7 +88,6 @@ For more examples, please refer to README at {0}
               'swk = swk.main:main'
           ],
       },
-      data_files=[
-          ('{0}/.swk'.format(user_home), ['swk.ini'])
-      ]
+      package_data={'swk': ['swk/swk.ini']},
+      cmdclass={'install': SymlinkConfig}
       )
