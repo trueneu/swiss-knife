@@ -10,7 +10,7 @@ setup(name='swk_foreman',
       packages=find_packages(),
       install_requires=[
           'swk>=0.0.4a4',
-          'pyzabbix>=0.7.4'
+          'python-foreman>=0.4.5'
       ],
       description='Plugin for swk, enabling Foreman api',
       long_description='This is not a standalone program nor a library.'
