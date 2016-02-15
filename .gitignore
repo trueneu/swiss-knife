@@ -60,3 +60,5 @@ target/
 
 #Pycharm
 .idea
+pip_scripts
+swk-local-run.py
