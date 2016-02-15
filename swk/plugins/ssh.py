@@ -308,10 +308,12 @@ class SSHPlugin(classes.SWKCommandPlugin):
 
         for host_config in self._paramiko_configs:
             user_config_for_host = paramiko_ssh_config.lookup(host_config['hostname'])
-            for k2 in ('hostname', 'user', 'port'):
+            for k2 in ('hostname', 'user', 'port', 'identityfile'):
                 if k2 in user_config_for_host:
                     if k2 == 'user':
                         host_config['username'] = user_config_for_host[k2]
+                    elif k2 == 'identityfile':
+                        host_config['key_filename'] = user_config_for_host[k2][0]
                     else:
                         host_config[k2] = user_config_for_host[k2]
 
