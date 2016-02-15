@@ -16,6 +16,8 @@ SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
+SSH: add identity file parameter to swk.ini, completely ignore both user and idfile parameters if absent
+    (get from config)
 
 General
 - come up with a name convention of module names and such
