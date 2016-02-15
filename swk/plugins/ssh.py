@@ -317,6 +317,12 @@ class SSHPlugin(classes.SWKCommandPlugin):
                     else:
                         host_config[k2] = user_config_for_host[k2]
 
+    def _paramiko_configs_update_from_swk_config(self, self_attr, target_attr):
+        for host_config in self._paramiko_configs:
+            #  k is a host, v is a dict of settings for the host
+            host_config[target_attr] = getattr(self, self_attr)
+
+
     def _paramiko_configs_set(self):
         # the way the ssh configuration for making the connections is defined is here
 
@@ -333,9 +339,11 @@ class SSHPlugin(classes.SWKCommandPlugin):
         self._update_paramiko_configs_from_ssh_config()
 
         # then override everything with what's passed to us in constructor
-        for host_config in self._paramiko_configs:
-            #  k is a host, v is a dict of settings for the host
-            host_config['username'] = self._username
+        if hasattr(self, "_username"):
+            self._paramiko_configs_update_from_swk_config("_username", "username")
+        if hasattr(self, "_identityfile"):
+            self._identityfile = os.path.expanduser(self._identityfile)
+            self._paramiko_configs_update_from_swk_config("_identityfile", "key_filename")
 
     def _print_results_summary(self):
         failed_hosts = ""

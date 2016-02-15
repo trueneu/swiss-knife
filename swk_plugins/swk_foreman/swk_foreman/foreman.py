@@ -25,22 +25,44 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     #_delimiter_help_message = "Use {0} as delimiter for classes list in shell mode.\n"
     _delimiter_help_message = ""
 
+    _short_parameters_dict = {'cls': 'class',
+                              'hg': 'hostgroup',
+                              'env': 'environment_name'}
 
-    _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. Arguments: <host expression>\n' + _delimiter_help_message},
-                 'setenv': {'requires_hostlist': True, 'help': 'Sets environment for hosts. Arguments: <host expression> <environment name>\n' + _delimiter_help_message},
-                 'getcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hosts. Arguments: <host expression>\n' + _delimiter_help_message},
-                 'addcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hosts. Arguments: <host expression> <puppet class name(s)>\n' + _delimiter_help_message},
-                 'rmcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hosts. Arguments: <host expression> <puppet class name(s)>\n' + _delimiter_help_message},
-                 'getgcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hostgroups. Arguments: <foreman hostgroup(s)>\n' + _delimiter_help_message},
-                 'addgcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n' + _delimiter_help_message},
-                 'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n' + _delimiter_help_message},
-                 'lscls': {'requires_hostlist': False, 'help': 'Prints available puppet classes. Arguments: None\n'}}
+    _search_help_string = "\nPossible criterias are: cls=<class_name>, env=<environment_name>, hg=<hostgroup_name>. " \
+                          "If you specify more than one, they're linked with 'AND' logic.\n"
+
+    _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. '
+                                                               'Arguments: <host expression>\n'},
+                 'setenv': {'requires_hostlist': True, 'help': 'Sets environment for hosts. Arguments: '
+                                                               '<host expression> <environment name>\n'},
+                 'getcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hosts. '
+                                                               'Arguments: <host expression>\n'},
+                 'addcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hosts. '
+                                                               'Arguments: <host expression> <puppet class name(s)>\n'},
+                 'rmcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hosts. '
+                                                              'Arguments: <host expression> <puppet class name(s)>\n'},
+                 'getgcls': {'requires_hostlist': True, 'help': 'Prints all puppet classes linked to hostgroups. '
+                                                                'Arguments: <foreman hostgroup(s)>\n'},
+                 'addgcls': {'requires_hostlist': True, 'help': 'Links new puppet classes to hostgroups. '
+                                                                'Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
+                 'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. '
+                                                               'Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
+                 'lscls': {'requires_hostlist': False, 'help': 'Prints available puppet classes. Arguments: None\n'},
+                 'srch': {'requires_hostlist': False, 'help': 'Finds host matching the specified criteria. '
+                                                              'Arguments: search criterias.\n' + _search_help_string},
+                 'srchg': {'requires_hostlist': False, 'help': 'Finds hostgroups matching the specified criteria. '
+                                                               'Arguments: search criterias\n' + _search_help_string},
+                 'desc': {'requires_hostlist': True, 'help': 'Describes given hosts. Arguments: <host expression>\n'}}
     _commands_help_message = "Foreman plugin:\n" \
                              "getenv - get foreman environment\nsetenv - set foreman environment (env name)\n" \
                              "getcls - get host assigned puppet classes\naddcls - adds classes to hosts (cls name[s])\n" \
                              "rmcls - removes classes from hosts (cls name[s])\n" \
                              "getgcls, addgcls and rmgcls - do the same to Foreman hostgroups\n" \
-                             "\tuse group names instead of host names here\n\n"
+                             "\tuse group names instead of host names for 'g' commands\n" \
+                             "srch - find hosts matching the criteria\n" \
+                             "srchg - find hostgroups matching the criteria\n" \
+                             "desc - describe given hosts\n\n"
 
 
     def _append_default_domain(self):
@@ -149,9 +171,9 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         hosts_info = self._get_verbose_hosts_info()
         for host_info in hosts_info:
             try:
+                SWKHelperFunctions.print_line_with_host_prefix("", host_info['name'])
                 for puppet_class in host_info['all_puppetclasses']:
-                    SWKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
-                                                                  host_info['name'])
+                    print(puppet_class['name'])
             except KeyError:
                 raise ForemanError("Foreman info about host says it has no 'all_puppetclasses' field")
             except TypeError:
@@ -238,9 +260,9 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         hostgroups_info = self._get_verbose_hostgroups_info()
         for hostgroup_info in hostgroups_info:
             try:
+                SWKHelperFunctions.print_line_with_host_prefix("", hostgroup_info['name'])
                 for puppet_class in hostgroup_info['puppetclasses']:
-                    SWKHelperFunctions.print_line_with_host_prefix(puppet_class['name'],
-                                                                  hostgroup_info['name'])
+                    print(puppet_class['name'])
             except KeyError:
                 raise ForemanError("Foreman info about group says it has no 'puppetclasses' field")
             except TypeError:
@@ -254,6 +276,53 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     def _rmgcls(self):
         classes_short_info = self._get_classes_short_info()
         self._rm_classes_from_groups(classes_short_info)
+
+    def _parse_key_equals_value(self, args_list):
+        result = dict()
+        for entry in args_list:
+            parts = entry.split('=')
+            result[parts[0]] = parts[1]
+        return result
+
+    def _require_arguments(self):
+        if not len(self._command_args):
+            raise ForemanError("Insufficient arguments")
+
+    def _form_search_string(self):
+        search_criteria_dict = self._parse_key_equals_value(self._command_args)
+        search_string = ""
+        for k, v in search_criteria_dict.items():
+            if k in self._short_parameters_dict:
+                key = self._short_parameters_dict[k]
+            else:
+                key = k
+            search_string += "{key}={value} AND ".format(key=key, value=v)
+        search_string = search_string[:-5]
+        return search_string
+
+    def _srch(self):
+        search_string = self._form_search_string()
+        search_results = self._fapi.hosts.index(per_page=sys.maxsize, search={search_string})['results']
+        for result in search_results:
+            print(result['name'])
+
+    def _srchg(self):
+        search_string = self._form_search_string()
+        search_results = self._fapi.hostgroups.index(per_page=sys.maxsize, search={search_string})['results']
+        for result in search_results:
+            print(result['name'])
+
+    def _desc(self):
+        hosts_info = self._get_all_hosts_info()
+        filtered_hosts_info = [x for x in hosts_info if x['name'] in self._hostlist_def_domain]
+        for host_info in filtered_hosts_info:
+            SWKHelperFunctions.print_line_with_host_prefix("",
+                                                          host_info['name'])
+            print("Hostgroup:\t{hg}\nOS:\t\t\t{os}\nIP:\t\t\t{ip}\nResource:\t{res}\nEnv:\t\t{env}\nComment:\t{cmnt}\n".format(
+                hg=host_info['hostgroup_name'], os=host_info['operatingsystem_name'], ip=host_info['ip'],
+                cmnt=host_info['comment'], res=host_info['compute_resource_name'],
+                env=host_info['environment_name']
+            ))
 
     def run_command(self):
         try:
@@ -275,6 +344,12 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
                 self._addgcls()
             elif self._command == 'rmgcls':
                 self._rmgcls()
+            elif self._command == 'srch':
+                self._srch()
+            elif self._command == 'srchg':
+                self._srchg()
+            elif self._command == 'desc':
+                self._desc()
         except ForemanException as e:
             raise ForemanError(str(e))
 
