@@ -40,7 +40,7 @@ setup(name='swk_casp',
       keywords='cli swiss-knife sysadmin casp',
       entry_points={
           'swk_plugin': [
-              'swk_casp = swk_casp.casp:main'
+              'swk_casp = swk_casp.swk_casp:main'
           ],
       },
       )

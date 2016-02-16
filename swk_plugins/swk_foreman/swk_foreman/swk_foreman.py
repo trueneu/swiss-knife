@@ -29,7 +29,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
                               'hg': 'hostgroup',
                               'env': 'environment_name'}
 
-    _search_help_string = "\nPossible criterias are: cls=<class_name>, env=<environment_name>, hg=<hostgroup_name>. " \
+    _search_help_string = "\nPossible criterias are: cls=<class_name>, hg=<hostgroup_name>. " \
                           "If you specify more than one, they're linked with 'AND' logic.\n"
 
     _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. '
@@ -140,6 +140,12 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
             self._write_cache(data)
         return data
 
+    def _get_short_hosts_info(self):
+        search_string = ' OR '.join(self._hostlist_def_domain)
+        hosts_info = self._fapi.hosts.index(per_page=sys.maxsize, search={search_string})['results']
+        return hosts_info
+
+
     def _set_hosts_environment(self, environment_id):
         try:
             for host in self._hostlist_def_domain:
@@ -150,9 +156,8 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
             raise ForemanError(str(e))
 
     def _getenv(self):
-        hosts_info = self._get_all_hosts_info()
-        filtered_hosts_info = [x for x in hosts_info if x['name'] in self._hostlist_def_domain]
-        for host_info in filtered_hosts_info:
+        hosts_info = self._get_short_hosts_info()
+        for host_info in hosts_info:
             SWKHelperFunctions.print_line_with_host_prefix(host_info['environment_name'],
                                                           host_info['name'])
 
@@ -268,7 +273,6 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
             except TypeError:
                 raise ForemanError("Foreman returned nonsense. Most probably one of hostgroups provided doesn't exist.")
 
-
     def _addgcls(self):
         classes_short_info = self._get_classes_short_info()
         self._add_classes_to_groups(classes_short_info)
@@ -288,8 +292,8 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         if not len(self._command_args):
             raise ForemanError("Insufficient arguments")
 
-    def _form_search_string(self):
-        search_criteria_dict = self._parse_key_equals_value(self._command_args)
+    def _form_search_string(self, criteria):
+        search_criteria_dict = self._parse_key_equals_value(criteria)
         search_string = ""
         for k, v in search_criteria_dict.items():
             if k in self._short_parameters_dict:
@@ -301,28 +305,42 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         return search_string
 
     def _srch(self):
-        search_string = self._form_search_string()
+        search_string = self._form_search_string(self._command_args)
         search_results = self._fapi.hosts.index(per_page=sys.maxsize, search={search_string})['results']
         for result in search_results:
             print(result['name'])
 
     def _srchg(self):
-        search_string = self._form_search_string()
+        search_string = self._form_search_string(self._command_args)
         search_results = self._fapi.hostgroups.index(per_page=sys.maxsize, search={search_string})['results']
         for result in search_results:
             print(result['name'])
 
     def _desc(self):
-        hosts_info = self._get_all_hosts_info()
-        filtered_hosts_info = [x for x in hosts_info if x['name'] in self._hostlist_def_domain]
-        for host_info in filtered_hosts_info:
-            SWKHelperFunctions.print_line_with_host_prefix("",
-                                                          host_info['name'])
-            print("Hostgroup:\t{hg}\nOS:\t\t\t{os}\nIP:\t\t\t{ip}\nResource:\t{res}\nEnv:\t\t{env}\nComment:\t{cmnt}\n".format(
+        hosts_info = self._get_short_hosts_info()
+
+        for host_info in hosts_info:
+            connected_hosts_names = list()
+            short_hostname = host_info['name'].replace('.' + host_info['domain_name'], '')
+            compute_resource_info = self._fapi.compute_resources.index(per_page=sys.maxsize,
+                                                     search={self._form_search_string(["name={short_hostname}".
+                                                                                      format(short_hostname=short_hostname)])}
+                                                     )['results']
+            if compute_resource_info:
+                compute_resource_id = compute_resource_info[0]['id']
+                connected_hosts_info = self._fapi.hosts.index(per_page=sys.maxsize,
+                                                         search={self._form_search_string(["compute_resource_id={id}".
+                                                                                          format(id=compute_resource_id)])}
+                                                         )['results']
+                connected_hosts_names = [x['name'] for x in connected_hosts_info]
+            SWKHelperFunctions.print_line_with_host_prefix("", host_info['name'])
+            print("Hostgroup:\t{hg}\nOS:\t\t{os}\nIP:\t\t{ip}\nResource:\t{res}\nEnv:\t\t{env}\nComment:\t{cmnt}".format(
                 hg=host_info['hostgroup_name'], os=host_info['operatingsystem_name'], ip=host_info['ip'],
                 cmnt=host_info['comment'], res=host_info['compute_resource_name'],
                 env=host_info['environment_name']
             ))
+            if connected_hosts_names:
+                print("Cnctd hosts:\t{cnctd_hosts}".format(cnctd_hosts=' '.join(connected_hosts_names)))
 
     def run_command(self):
         try:

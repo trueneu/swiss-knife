@@ -27,10 +27,10 @@ shell_mode_off = False
 try:
     import swk.shell
 except SyntaxError:
-    logging.warning("swk shell mode has been disabled. Seems like you're using Python 2")
+    #logging.warning("swk shell mode has been disabled. Seems like you're using Python 2")
     shell_mode_off = True
 except ImportError:
-    logging.warning("swk shell mode has been disabled. Seems like you haven't installed pypsi package")
+    #logging.warning("swk shell mode has been disabled. Seems like you haven't installed pypsi package")
     shell_mode_off = True
 
 
@@ -102,7 +102,7 @@ class SwissKnife(object):
 
 
     def _logging_init(self):
-        loglevel_string = self._config["Main"].get("loglevel", "warning")
+        loglevel_string = self._config["Main"].get("loglevel", "error")
         try:
             loglevel = {"debug": logging.DEBUG,
                         "info": logging.INFO,
@@ -110,7 +110,7 @@ class SwissKnife(object):
                         "error": logging.ERROR,
                         "critical": logging.CRITICAL}[loglevel_string]
         except KeyError:
-            loglevel = logging.INFO
+            loglevel = logging.ERROR
         if loglevel == logging.DEBUG:
             self._dbg_prints = True
         else:
@@ -176,7 +176,11 @@ class SwissKnife(object):
             module_name = entry_point.module_name
             if module_name in self._disabled_plugins or module_name in ['__init__']:
                 continue
-            module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
+            try:
+                module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
+            except ImportError as e:
+                self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                    if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
 
@@ -348,6 +352,11 @@ class SwissKnife(object):
         if string.find('*') != -1:
             self._die("Unsafe characters found in hostlist. Exiting")
 
+
+    def _read_hostlist_from_stdin(self):
+        hostlist_lines = sys.stdin.readlines()
+        self._hostlist += '\n'.join(hostlist_lines)
+
     def _expand_hostlist(self):
         expanded_hostlist = list()  # expanded
 
@@ -357,7 +366,12 @@ class SwissKnife(object):
 
         # yeah, maybe we'll need that dirty hack in the future
 
-        hostgroups = self._hostlist.split(',')
+        if len(self._hostlist) == 1 and self._hostlist[0] == '-':
+            # special case for reading stdin instead of command args
+            self._read_hostlist_from_stdin()
+
+        hostgroups = self._hostlist.split()
+
         for hostgroup in hostgroups:
             hostlist_addition = list()
             negation = False
@@ -371,7 +385,7 @@ class SwissKnife(object):
                 hostgroup = hostgroup[1:]
 
             if hostgroup_modifier not in self._available_parsers:
-                if not hostgroup_modifier.isalpha():
+                if not hostgroup_modifier.isalnum():
                     raise exceptions.ExpandingHostlistError("Couldn't find corresponding parser for {0} modifier.".format(hostgroup_modifier))
                 else:  # hostgroup is a host or a regex, not a group
                     escaped_hostgroup = self._escape_unsafe_characters(hostgroup)

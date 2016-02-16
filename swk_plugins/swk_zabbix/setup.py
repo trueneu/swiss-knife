@@ -40,7 +40,7 @@ setup(name='swk_zabbix',
       keywords='cli swiss-knife sysadmin zabbix',
       entry_points={
           'swk_plugin': [
-              'swk_zabbix = swk_zabbix.zabbix:main'
+              'swk_zabbix = swk_zabbix.swk_zabbix:main'
           ],
       },
       )

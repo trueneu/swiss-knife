@@ -1,5 +1,11 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
+SSH: Pavels-MacBook-Pro:mha trueneu$ swk dist xen-trueneu-test[1-5] mha4mysql-* ~/
+[xen-trueneu-test1]: scp: /Users/trueneu/: No such file or directory
+glob expansion on non-local fs? -- it's bash
+General: try-except unloadable modules
+General: logging warnings output to stdout even with error logging level
+FRMN: make search by env work
 
 Re-do
 SSH: try to use fabric in ssh module?
@@ -16,6 +22,7 @@ SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
+SSH: add glob support for gather/dist
 
 
 General

@@ -40,7 +40,7 @@ setup(name='swk_foreman',
       keywords='cli swiss-knife sysadmin foreman',
       entry_points={
           'swk_plugin': [
-              'swk_foreman = swk_foreman.foreman:main'
+              'swk_foreman = swk_foreman.swk_foreman:main'
           ],
       },
       )
