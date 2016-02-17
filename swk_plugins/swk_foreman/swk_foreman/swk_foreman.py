@@ -269,7 +269,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
 
     def _lscls(self):
         all_classes_short_info = self._get_all_classes_short_info()
-        for class_short_info in all_classes_short_info:
+        for class_short_info in sorted(all_classes_short_info, key=lambda x: x['name']):
             print(class_short_info['name'])
 
     def _getgcls(self):
