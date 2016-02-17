@@ -6,8 +6,7 @@ glob expansion on non-local fs? -- it's bash
 General: try-except unloadable modules
 General: logging warnings output to stdout even with error logging level
 FRMN: make search by env work
-FRMN: addgcls seems to be utterly broken, it removes all the other classes
-    probably addcls too
+
 
 Re-do
 SSH: try to use fabric in ssh module?
@@ -25,10 +24,11 @@ SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
 SSH: add glob support for gather/dist
-
+General: local commit hook to convert .md to .rst
+General: come up with an autoupdate mech
 
 General
 - come up with a name convention of module names and such
 - insert logging in plugins
 - before pypi: review setup.pys, maybe there's additional info I'd like to add
-- include example in readme: pssh xen-trueneu-test[2-5] sudo bash -c "git clone http://git.dgvg.ru/trueneu/in-place-utilities.git /root/scripts"
+
