@@ -238,7 +238,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     def _get_hostgroups_short_info(self):
         result = list()
         for hostgroup in self._grouplist:
-            result.append(self._fapi.hostgroups.index(per_page=sys.maxsize, search={'name=' + hostgroup})['results'][0])
+            result.append(self._fapi.hostgroups.index(per_page=sys.maxsize, search={'title=' + hostgroup})['results'][0])
         return result
 
     def _add_classes_to_groups(self, classes_short_info):
