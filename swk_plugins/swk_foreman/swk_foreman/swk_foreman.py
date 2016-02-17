@@ -12,7 +12,8 @@ from swk.helper_functions import SWKHelperFunctions
 import sys
 import os
 import datetime
-import shlex
+import logging
+import inspect
 
 class ForemanError(classes.SWKParsingError, classes.SWKCommandError):
     def __init__(self, message):
@@ -216,7 +217,10 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     def _add_classes_to_hosts(self, classes_short_info):
         class_ids_list = self._form_class_ids_list(classes_short_info)
         for host in self._hostlist_def_domain:
-            self._fapi.hosts.update(host={'puppetclass_ids': class_ids_list}, id=host)
+            logging.debug("hosts methods: {0}".format(dir(self._fapi.hosts)))
+            logging.debug("host_clasess_create args: {0}".format(inspect.getargspec(self._fapi.hosts.host_classes_create)))
+            for class_id in class_ids_list:
+                self._fapi.hosts.host_classes_create(host_id=host, puppetclass_id=class_id)
             SWKHelperFunctions.print_line_with_host_prefix("done", host)
 
     def _rm_classes_from_hosts(self, classes_short_info):
@@ -236,7 +240,9 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         hostgroups_short_info = self._get_hostgroups_short_info()
         class_ids_list = self._form_class_ids_list(classes_short_info)
         for hostgroup_info in hostgroups_short_info:
-            self._fapi.hostgroups.update(hostgroup={'puppetclass_ids': class_ids_list}, id=hostgroup_info['id'])
+            logging.debug("hostgroup_clasess_create args: {0}".format(inspect.getargspec(self._fapi.hostgroups.hostgroup_classes_create)))
+            for class_id in class_ids_list:
+                self._fapi.hostgroups.hostgroup_classes_create(hostgroup_id=hostgroup_info['id'], puppetclass_id=class_id)
             SWKHelperFunctions.print_line_with_host_prefix("done", hostgroup_info['name'])
 
     def _rm_classes_from_groups(self, classes_short_info):
@@ -262,6 +268,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
             print(class_short_info['name'])
 
     def _getgcls(self):
+        logging.debug("hostgroups methods: {0}".format(dir(self._fapi.hostgroups)))
         hostgroups_info = self._get_verbose_hostgroups_info()
         for hostgroup_info in hostgroups_info:
             try:
