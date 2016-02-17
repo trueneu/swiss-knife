@@ -54,7 +54,7 @@ Usage
 
 Typical usage looks like
 
-``swk pssh "%hostgroup1[,[-]^hostgroup2,..,host1,[-]host2]" uptime``
+``swk pssh "%hostgroup1[ [-]^hostgroup2 .. host1 [-]host2]" uptime``
 
 which executes uptime on all the hosts over ssh in parallel fashion.
 
@@ -63,12 +63,11 @@ hostgroup modifiers which indicate which parser should expand a given
 hostgroup into a host list. hyphen (``-``) in front of hostgroup or a
 host means that hostgroup or host will be excluded from resulting list.
 A host may be a simple regex (no \* quantificator or anychar (.), no
-lookahead/lookbehinds, no commas as comma is a hostgroups separator, so
-no {n,m} style regexes), ``swk`` will generate strings that match it and
+lookahead/lookbehinds), ``swk`` will generate strings that match it and
 use it as hosts. If you're excluding hosts that aren't included yet,
 nothing happens. Hostlist is expanded from left to right. Example:
 
-``swk pssh "^g1,-host[1234]" echo Yay``
+``swk pssh "^g1 -host[1234]" echo Yay``
 
 will execute ``echo Yay`` in parallel fashion on each host that's in
 zabbix hostgroup ``g1`` except hosts ``host1``, ``host2``, ``host3`` and
@@ -83,14 +82,15 @@ command, recursive and without preserving times by default), copying
 files from multiple hosts over ssh (``gather``) - and just displaying
 results of hostlist expansion (``dr`` for 'dry-run')
 
-By installing additional packages named ``swk_<plugin_name>``, you also
+By installing additional packages named ``swk-<plugin_name>``, you also
 get - expanding **zabbix** hostgroups (``^`` modifier), **casp**
 hostgroups (``%`` modifier), special ``ALL`` hostgroup expanding to all
 the hosts - getting and setting hosts environments in **Foreman**
 (``getenv`` and ``setenv`` commands), getting, adding and removing
 classes linked to hosts and hostgroups (``getcls``, ``addcls``,
-``rmcls``, ``getgcls``, ``addgcls``, ``rmgcls`` respectively), and
-listing available classes (``lscls``)
+``rmcls``, ``getgcls``, ``addgcls``, ``rmgcls`` respectively), searching
+hosts and hostgroups based on given criteria (``srch`` and ``srchg``),
+listing available classes (``lscls``) and describing hosts (``desc``).
 
 To install them, please refer to `Installation <#Installation>`__
 section above.
@@ -112,11 +112,11 @@ Suppose your servers are named a bit more sophisticated, like
 ``frontend01``, ``frontend02``, ..., ``frontend25``. This command would
 do the trick (note the quotes around host expression):
 
-``swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log``
+``swk pssh 'frontend([0-1][0-9]|2[0-5]) -frontend00' grep '/api/do_something' /var/log/nginx/access.log``
 
 You can always verify if you did the host expression right:
 
-``swk dr 'frontend([0-1][0-9]|2[0-5]),-frontend00'``
+``swk dr 'frontend([0-1][0-9]|2[0-5]) -frontend00'``
 
 Output:
 
@@ -132,22 +132,22 @@ Suppose you also have servers ``backend01``, ``backend02``, ...,
 ``backend10``, and you want to run ``uptime`` on both frontends and
 backends. Try this one:
 
-``swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00,backend(0[1-9]|10)' uptime``
+``swk pssh 'frontend([0-1][0-9]|2[0-5]) -frontend00,backend(0[1-9]|10)' uptime``
 
 Now imagine you have to execute a certain script named ``test.sh`` on
 those 25 frontends locally. First, copy it to target hosts:
 
-``swk dist 'frontend([0-1][0-9]|2[0-5]),-frontend00' ./my_scripts/test.sh /usr/share/``
+``swk dist 'frontend([0-1][0-9]|2[0-5]) -frontend00' ./my_scripts/test.sh /usr/share/``
 
 and then execute it:
 
-``swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' /usr/share/test.sh``
+``swk pssh 'frontend([0-1][0-9]|2[0-5]) -frontend00' /usr/share/test.sh``
 
 Imagine you need to do something with nginx logs locally on your
 computer (say, a simple statistics calculation). You can gather all the
 logs to your machine with one command:
 
-``swk gather 'frontend([0-1][0-9]|2[0-5]),-frontend00' /var/log/nginx/access.log ./nginx-logs-from-production``
+``swk gather 'frontend([0-1][0-9]|2[0-5]) -frontend00' /var/log/nginx/access.log ./nginx-logs-from-production``
 
 This will create 'nginx-logs-from-production' directory in your current
 working directory, and copy over all the access.log files, appending a
@@ -161,6 +161,33 @@ plugins <#available-and-bundled-plugins>`__ section above)
 
 ``swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production``
 
+You probably already have some cli tools for finding hosts falling under
+some search criteria. Suppose you have a tool that's called
+``my_awesome_tool`` which returns some hostnames on call, like this:
+
+::
+
+    $ my_awesome_tool
+    host1
+    host2
+    host3
+
+If you want to use your tools as a source for hostlists for ``swk``, you
+can achieve this in two ways:
+
+::
+
+    swk pssh "`my_awesome_tool`" uptime
+
+or
+
+::
+
+    my_awesome_tool | swk pssh - uptime
+
+where ``-`` instead of host expression indicates that ``swk`` reads from
+stdin.
+
 Imagine that you have Foreman installation and you need to set all the
 frontends' environments to 'development' (note that you still use ^
 here, so host expansion mechanism works with Zabbix hostgroups)
@@ -171,6 +198,46 @@ here, so host expansion mechanism works with Zabbix hostgroups)
 ``nginx::verbose_access_logs`` Puppet class
 
 ``swk addgcls frontend nginx::verbose_access_logs``
+
+You can also get description on an existing host:
+
+::
+
+    swk desc myhost
+
+Output:
+
+::
+
+    [myhost.example_domain.com]:
+    Hostgroup:  mysql
+    OS:     Debian 7.9
+    IP:     192.168.1.1
+    Resource:   myhypervisor
+    Env:        production
+    Comment:    my favorite host!
+
+Or search hosts by a given criteria (Foreman doesn't support everything
+for a search criterias). There are two short keywords for convenience
+now: hg for hostgroup and cls for class. Specifying several implies AND
+logic:
+
+::
+
+    swk srch cls=my_awesome_puppet_class
+
+Output:
+
+::
+
+    myhost
+
+This way you can combine ``swk`` invocations in something really fun
+like
+
+::
+
+    swk pssh "`swk srch cls=my_awesome_puppet_class`" reboot
 
 Remember to use and escape quotes when needed!
 
@@ -220,6 +287,14 @@ via ``sys`` command or even omit ``sys``:
 It also supports history through ``hist`` command, etc. To get help on
 any command, issue ``help <command>`` or ``help`` without arguments to
 get an overview.
+
+Please note that shell mode doesn't support backticks yet, so if you
+need to feed a hostlist to ``swk`` from somewhere, you should use stdin
+approach:
+
+::
+
+    swk> srch cls=my_awesome_class | pssh - reboot
 
 Details
 ~~~~~~~

@@ -39,26 +39,7 @@ setup(name='swk',
           'scp>=0.10.2',
           'pypsi>=1.3.0'
       ],
-      long_description='''
-An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
-with parallel ssh out of the box with a shell mode.
-
-Examples:
-::
-
-    swk pssh 'frontend([0-1][0-9]|2[0-5]),-frontend00' grep '/api/do_something' /var/log/nginx/access.log
-    swk gather ^frontend /var/log/nginx/access.log ./nginx-logs-from-production
-    swk ssh foohost,barhost,zeehost uptime
-
-Shell mode:
-::
-
-    swk> pssh ^mysql mysql -e 'show variables like "read_only"' >> ./read_only.tmp
-    swk> pssh ^mysql mysql -e 'show variables like "%format%"' | grep innodb
-
-For more examples, please refer to README at {0}
-
-'''.format(url),
+      long_description=open("README.rst").read(),
       entry_points={
           'console_scripts': [
               'swk = swk.main:main'
