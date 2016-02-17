@@ -28,6 +28,8 @@ class Bcolors:
 
 
 def print_ssh_line(line, host, is_err=False, colorful=True, print_prefix=True):
+    logging.debug("Received a string to print: {st}".format(st=line.encode('utf-8')))
+
     parallel_line_prefix = '[%s]: '
     if print_prefix:
         data = parallel_line_prefix % host + line.replace('\n', '\n' + parallel_line_prefix % host, line.count('\n') - 1)
@@ -201,13 +203,16 @@ def paramiko_exec_thread_run(paramiko_thread_config, cmd, timeout):
                     break
 
         if len(recv_buffer) > 0:
+            logging.debug("Current recv_buffer: {0}".format(recv_buffer.encode()))
             last_newline_pos = recv_buffer.rfind('\n')
             if last_newline_pos != -1:
                 if last_newline_pos != len(recv_buffer) - 1:
-                    recv_buffer_tail = recv_buffer[last_newline_pos:]
+                    recv_buffer_tail = recv_buffer[last_newline_pos + 1:]
                     recv_buffer_head = recv_buffer[:last_newline_pos]
                     print_ssh_line(recv_buffer_head, host, is_err=False)
                     recv_buffer = recv_buffer_tail
+                    logging.debug("recv_buffer_tail: {0}".format(recv_buffer_tail.encode()))
+                    logging.debug("recv_buffer_head: {0}".format(recv_buffer_head.encode()))
                 else:
                     print_ssh_line(recv_buffer, host, is_err=False)
                     recv_buffer = ""

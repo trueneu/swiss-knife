@@ -9,7 +9,7 @@ see swk/main.py for more information on License and contacts
 """
 import abc
 import shlex
-
+import logging
 
 class SWKPlugin(object):
     """
@@ -77,7 +77,8 @@ class SWKCommandPlugin(SWKPlugin):
         """
         super(SWKCommandPlugin, self).__init__(*args, **kwargs)
         shlex_splitted_command_args = list()
-        if hasattr(self, "_command_args"):
+        if hasattr(self, "_command_args") and len(self._command_args) > 0 and (self._command_args[0] is not None):
+            logging.debug("self._command_args received: {cmdargs}".format(cmdargs=self._command_args))
             for command_arg in self._command_args:
                 shlex_splitted_command_args.extend(self._shlex_quoting_split(command_arg))
             self._command_args = shlex_splitted_command_args

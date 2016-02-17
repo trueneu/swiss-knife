@@ -6,6 +6,7 @@ glob expansion on non-local fs? -- it's bash
 General: try-except unloadable modules
 General: logging warnings output to stdout even with error logging level
 FRMN: make search by env work
+FRMN: addgcls seems to be utterly broken, it removes all the other classes
 
 Re-do
 SSH: try to use fabric in ssh module?
