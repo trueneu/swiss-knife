@@ -28,10 +28,15 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
 
     _short_parameters_dict = {'cls': 'class',
                               'hg': 'hostgroup',
-                              'env': 'environment_name'}
+                              'env': 'environment',
+                              'os': 'os'}
 
-    _search_help_string = "\nPossible criterias are: cls=<class_name>, hg=<hostgroup_name>. " \
-                          "If you specify more than one, they're linked with 'AND' logic.\n"
+    _short_parameters_help_string = ', '.join(["{k}={v}".format(k=k, v=v) for (k, v) in _short_parameters_dict.items()])
+
+    _search_help_string = "Possible criterias are: {help_string}\n" \
+                          "If you specify more than one, they're linked with 'AND' logic.\n".format(
+        help_string=_short_parameters_help_string
+    )
 
     _commands = {'getenv': {'requires_hostlist': True, 'help': 'Prints current environment for hosts. '
                                                                'Arguments: <host expression>\n'},
@@ -292,7 +297,10 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         result = dict()
         for entry in args_list:
             parts = entry.split('=')
-            result[parts[0]] = parts[1]
+            try:
+                result[parts[0]] = parts[1]
+            except:
+                raise ForemanError("Error in search criterias: {0}".format(entry))
         return result
 
     def _require_arguments(self):
