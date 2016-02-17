@@ -69,6 +69,7 @@ based on given criteria (`srch` and `srchg`), listing available classes (`lscls`
 describing hosts (`desc`).
 
 To install them, please refer to [Installation](#Installation) section above.
+Also, please read [Usage notes](#usage-notes) below before using.
 
 Hopefully, there are more coming.
 
@@ -154,6 +155,10 @@ Imagine that you have Foreman installation and you need to set all the frontends
 
 ```swk addgcls frontend nginx::verbose_access_logs```
 
+Note: if you have several Foreman hostgroups named the same, but different hierarchically
+(for example, `debian/mysql` and `mysql`), `getgcls`, `addgcls`
+and `rmgcls` will work with the first group returned by Foreman API.
+
 You can also get description on an existing host:
 
 ```
@@ -170,7 +175,8 @@ Env:		production
 Comment:	my favorite host!
 ```
 Or search hosts by a given criteria (Foreman doesn't support everything for a search criterias). There are
-two short keywords for convenience now: hg for hostgroup and cls for class. Specifying several implies AND logic:
+two short keywords for convenience now: `hg` for hostgroup, `cls` for class, `env`
+for environment and `os` for OS family (Debian, RedHat etc). Specifying several implies AND logic:
 ```
 swk srch cls=my_awesome_puppet_class
 ```
@@ -299,7 +305,9 @@ left bracket will be treated as a hostgroup modifier.
 - username for ssh specified in **swk.ini** will override your current username and username from .ssh/config if present
 - Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks from multiprocessing)
 - interactive user input is NOT supported when running a command
-
+- if you have several Foreman hostgroups named the same, but different hierarchically
+(for example, `debian/mysql` and `mysql`), `getgcls`, `addgcls`
+and `rmgcls` will work with the first group returned by Foreman API.
 ###### Dev notes
 
 - if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
