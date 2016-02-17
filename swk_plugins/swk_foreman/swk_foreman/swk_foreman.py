@@ -34,7 +34,8 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     _short_parameters_help_string = ', '.join(["{k}={v}".format(k=k, v=v) for (k, v) in _short_parameters_dict.items()])
 
     _search_help_string = "Possible criterias are: {help_string}\n" \
-                          "If you specify more than one, they're linked with 'AND' logic.\n".format(
+                          "If you specify more than one, they're linked with 'AND' logic.\n" \
+                          "Standard Foreman relational operators are supported: =, !=, ~, !~, ^, !^".format(
         help_string=_short_parameters_help_string
     )
 
@@ -151,7 +152,6 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
         hosts_info = self._fapi.hosts.index(per_page=sys.maxsize, search={search_string})['results']
         return hosts_info
 
-
     def _set_hosts_environment(self, environment_id):
         try:
             for host in self._hostlist_def_domain:
@@ -238,7 +238,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     def _get_hostgroups_short_info(self):
         result = list()
         for hostgroup in self._grouplist:
-            result.append(self._fapi.hostgroups.index(per_page=sys.maxsize, search={'title=' + hostgroup})['results'][0])
+            result.append(self._fapi.hostgroups.index(per_page=sys.maxsize, search={'name=' + hostgroup})['results'][0])
         return result
 
     def _add_classes_to_groups(self, classes_short_info):
@@ -295,10 +295,17 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
 
     def _parse_key_equals_value(self, args_list):
         result = dict()
+        relational_operators = ['!=', '!~', '!^', '=', '~', '^']
         for entry in args_list:
-            parts = entry.split('=')
+            parts = None
+            for relational_operator in relational_operators:
+                if relational_operator in entry:
+                    parts = entry.split(relational_operator)
+                    break
+            if parts is None:
+                raise ForemanError("Error in search criterias: {0}".format(entry))
             try:
-                result[parts[0]] = parts[1]
+                result[parts[0]] = (relational_operator, parts[1])
             except:
                 raise ForemanError("Error in search criterias: {0}".format(entry))
         return result
@@ -310,26 +317,29 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
     def _form_search_string(self, criteria):
         search_criteria_dict = self._parse_key_equals_value(criteria)
         search_string = ""
-        for k, v in search_criteria_dict.items():
+        for k, (o, v) in search_criteria_dict.items():
             if k in self._short_parameters_dict:
                 key = self._short_parameters_dict[k]
             else:
                 key = k
-            search_string += "{key}={value} AND ".format(key=key, value=v)
+            search_string += "{key} {op} {value} AND ".format(key=key, value=v, op=o)
         search_string = search_string[:-5]
         return search_string
 
-    def _srch(self):
+    def _search(self, method):
         search_string = self._form_search_string(self._command_args)
-        search_results = self._fapi.hosts.index(per_page=sys.maxsize, search={search_string})['results']
+        try:
+            search_results = method(per_page=sys.maxsize, search={search_string})['results']
+        except ForemanException as e:
+            raise ForemanError("Most probably your search criteria is not supported.")
         for result in search_results:
             print(result['name'])
 
+    def _srch(self):
+        self._search(self._fapi.hosts.index)
+
     def _srchg(self):
-        search_string = self._form_search_string(self._command_args)
-        search_results = self._fapi.hostgroups.index(per_page=sys.maxsize, search={search_string})['results']
-        for result in search_results:
-            print(result['name'])
+        self._search(self._fapi.hostgroups.index)
 
     def _desc(self):
         hosts_info = self._get_short_hosts_info()
