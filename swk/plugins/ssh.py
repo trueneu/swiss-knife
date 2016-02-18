@@ -16,7 +16,7 @@ import socket
 import scp
 import logging
 import signal
-import shlex
+
 
 class Bcolors:
     HEADER = '\033[95m'

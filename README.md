@@ -1,6 +1,6 @@
 # swiss-knife
-An extendable utility for doing everything with self-defined hosts/hostgroups, utilizing API of your environment,
-with parallel ssh out of the box.
+An extendable utility with plugins for doing everything with self-defined hosts/hostgroups,
+utilizing API of your environment, with parallel ssh out of the box.
 
 Destroying all your databases at once has never been this simple!
 ```
@@ -15,7 +15,11 @@ through the plugin interface, as well as your own hostgroup parsers (usually the
 your environment about which hosts are included in provided hostgroup). Basic Foreman, Zabbix API and ssh
  functions are supported out of the box.
 
-Please note that this is *not* `fabric`.
+Please note that this is *not* `fabric` (though it uses `paramiko`, both are marvellous pieces of
+software). This utility is designed to work in small environments, it's
+very easy to use (not harder than shell) and to configure, it has no learning curve, and it provides
+a way to execute quick-and-dirty commands on a lot of hosts at hand.
+And it's also easily extendable by plugins.
 
 ### Installation
 
@@ -34,7 +38,8 @@ Upon first execution `swk`` will create **~/.swk** directory, where you should f
 file, and that's used to store shell mode command history, program's log, various plugins' cache, etc.
 
 Please note that you should use python3.2+ for shell mode to work. Everything else should work with
-python2.7.
+python2.7. You probably may have to update `pip` and `setuptools` (`pip install --upgrade pip setuptools`).
+You also may have to do all of these with `sudo`, or fall into your **virtualenv** if you use one.
 
 
 ### Usage
@@ -308,6 +313,10 @@ left bracket will be treated as a hostgroup modifier.
 - if you have several Foreman hostgroups named the same, but different hierarchically
 (for example, `debian/mysql` and `mysql`), `getgcls`, `addgcls`
 and `rmgcls` will work with the first group returned by Foreman API.
+- Foreman `srch` routines may work not as you expect, because `swk` relies completely on Foreman's API. For
+example, `swk srch cls!=myclass` won't give neither any useful results nor error, but this is how
+API is designed. To check if your query really works, try it in the web interface first.
+
 ###### Dev notes
 
 - if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
