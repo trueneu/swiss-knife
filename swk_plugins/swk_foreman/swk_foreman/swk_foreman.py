@@ -35,7 +35,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
 
     _search_help_string = "Possible criterias are: {help_string}\n" \
                           "If you specify more than one, they're linked with 'AND' logic.\n" \
-                          "Standard Foreman relational operators are supported: =, !=, ~, !~, ^, !^".format(
+                          "Standard Foreman relational operators are supported: =, !=, ~, !~, ^, !^\n".format(
         help_string=_short_parameters_help_string
     )
 
@@ -56,7 +56,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
                  'rmgcls': {'requires_hostlist': True, 'help': 'Unlinks puppet classes from hostgroups. '
                                                                'Arguments: <foreman hostgroup(s)> <puppet class name(s)>\n'},
                  'lscls': {'requires_hostlist': False, 'help': 'Prints available puppet classes. Arguments: None\n'},
-                 'srch': {'requires_hostlist': False, 'help': 'Finds host matching the specified criteria. '
+                 'srch': {'requires_hostlist': False, 'help': 'Finds hosts matching the specified criteria. '
                                                               'Arguments: search criterias.\n' + _search_help_string},
                  'srchg': {'requires_hostlist': False, 'help': 'Finds hostgroups matching the specified criteria. '
                                                                'Arguments: search criterias\n' + _search_help_string},
