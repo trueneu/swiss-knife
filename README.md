@@ -300,6 +300,10 @@ No compatibility with future versions is guaranteed yet.
 
 `casp` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
+`swk` uses a small part of `yolk3k` package that can be found on [github](https://github.com/cakebread/yolk)
+by Rob Cakebread to handle self-update noticing mechanics. You can turn new version checking by modifying
+**swk.ini** parameter 'check_for_updates' to anything but 'yes'.
+
 It should work on python2.7+, python3.2+.
 
 ###### Usage notes

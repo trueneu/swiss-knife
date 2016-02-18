@@ -22,6 +22,8 @@ import exrex
 import pkg_resources
 from swk import version
 import shutil
+from swk import check_updates
+import datetime
 
 shell_mode_off = False
 try:
@@ -41,6 +43,11 @@ class SwissKnife(object):
     _swk_config_path = "~/.swk/"
     _swk_config_filename = "swk.ini"
     _swk_config_full_path = os.path.join(os.path.expanduser(_swk_config_path), _swk_config_filename)
+    _swk_package_name = 'swk'
+    _swk_check_updates_marker_filename = 'checked_update'
+    _swk_check_updates_marker_full_path = os.path.join(os.path.expanduser(_swk_config_path),
+                                                       _swk_check_updates_marker_filename)
+    _swk_check_updates_period = 60 * 60 * 24
 
     def _write_default_config(self):
         if not os.path.isdir(os.path.dirname(self._swk_config_full_path)):
@@ -59,6 +66,28 @@ class SwissKnife(object):
                 msg = "Couldn't create default config at {path}, aborting.".format(path=self._swk_config_full_path)
                 self._die(msg)
 
+    def _check_updates(self):
+        now = datetime.datetime.utcnow()
+        now_timestamp = (now - datetime.datetime(1970, 1, 1)).total_seconds()
+        try:
+            check_updates_marker_mtime = os.path.getmtime(self._swk_check_updates_marker_full_path)
+        except IOError:
+            check_updates_marker_mtime = now_timestamp - (self._swk_check_updates_period + 1)
+        if now_timestamp - check_updates_marker_mtime > self._swk_check_updates_period:
+            try:
+                cheese_shop = check_updates.CheeseShop()
+                last_version = cheese_shop.package_releases(self._swk_package_name)[0]
+            except:
+                print("Couldn't run check for new versions. Please check your Internet settings or turn it off"
+                      "in {0}.".format(self._swk_config_filename))
+                last_version = self._version
+            if check_updates.get_highest_version([self._version, last_version]) != self._version:
+                print("You're using swk v{old}, but v{new} is available! Please upgrade.".format(
+                    old=self._version, new=last_version
+                ))
+            with open(self._swk_check_updates_marker_full_path, mode='w'):
+                pass
+
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, "_{0}".format(k), v)
@@ -67,6 +96,9 @@ class SwissKnife(object):
         self._config = self._read_config()
         
         self._logging_init()
+
+        if self._config["Main"].get("check_for_updates", "yes") == "yes":
+            self._check_updates()
 
         self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins", "").split()]
 
