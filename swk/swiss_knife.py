@@ -97,7 +97,7 @@ class SwissKnife(object):
         
         self._logging_init()
 
-        if self._config["Main"].get("check_for_updates", "yes") == "yes":
+        if self._config["Main"].get("check_for_updates", "no") == "yes":
             self._check_updates()
 
         self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins", "").split()]
