@@ -1,9 +1,9 @@
 swiss-knife
 ===========
 
-An extendable utility for doing everything with self-defined
-hosts/hostgroups, utilizing API of your environment, with parallel ssh
-out of the box.
+An extendable utility with plugins for doing everything with
+self-defined hosts/hostgroups, utilizing API of your environment, with
+parallel ssh out of the box.
 
 Destroying all your databases at once has never been this simple!
 
@@ -13,6 +13,16 @@ Destroying all your databases at once has never been this simple!
 
 (yeah, you really shouldn't do that in production environment. Unless
 you're angry and desperate.)
+
+Please update
+'''''''''''''
+
+If you're using ``swk`` older than v0.0.4a13, please update to the
+latest version. There's a whole lot of bugfixes every week, as
+development's in progress, thus I've included auto check for updates
+function. It runs once a day when you run swk, and outputs to stderr if
+newer version is available. You can turn it off by setting
+'check\_for\_updates' to anything but 'yes' in **swk.ini** .
 
 What can it do?
 ~~~~~~~~~~~~~~~
@@ -25,7 +35,12 @@ parsers (usually they'll just ask some API in your environment about
 which hosts are included in provided hostgroup). Basic Foreman, Zabbix
 API and ssh functions are supported out of the box.
 
-Please note that this is *not* ``fabric``.
+Please note that this is *not* ``fabric`` (though it uses ``paramiko``,
+both are marvellous pieces of software). This utility is designed to
+work in small environments, it's very easy to use (not harder than
+shell) and to configure, it has no learning curve, and it provides a way
+to execute quick-and-dirty commands on a lot of hosts at hand. And it's
+also easily extendable by plugins.
 
 Installation
 ~~~~~~~~~~~~
@@ -46,8 +61,11 @@ Upon first execution \`swk\`\` will create **~/.swk** directory, where
 you should find **swk.ini** configuration file, and that's used to store
 shell mode command history, program's log, various plugins' cache, etc.
 
-Please note that you should use python3.2+ for shell mode to work.
-Everything else should work with python2.7.
+Please note that you should use python3.3+ for shell mode to work.
+Everything else should work with python2.7.6+. You probably may have to
+update ``pip`` and ``setuptools``
+(``pip install --upgrade pip setuptools``). You also may have to do all
+of these with ``sudo``, or fall into your **virtualenv** if you use one.
 
 Usage
 ~~~~~
@@ -93,7 +111,8 @@ hosts and hostgroups based on given criteria (``srch`` and ``srchg``),
 listing available classes (``lscls``) and describing hosts (``desc``).
 
 To install them, please refer to `Installation <#Installation>`__
-section above.
+section above. Also, please read `Usage notes <#usage-notes>`__ below
+before using.
 
 Hopefully, there are more coming.
 
@@ -199,6 +218,11 @@ here, so host expansion mechanism works with Zabbix hostgroups)
 
 ``swk addgcls frontend nginx::verbose_access_logs``
 
+Note: if you have several Foreman hostgroups named the same, but
+different hierarchically (for example, ``debian/mysql`` and ``mysql``),
+``getgcls``, ``addgcls`` and ``rmgcls`` will work with the first group
+returned by Foreman API.
+
 You can also get description on an existing host:
 
 ::
@@ -218,9 +242,10 @@ Output:
     Comment:    my favorite host!
 
 Or search hosts by a given criteria (Foreman doesn't support everything
-for a search criterias). There are two short keywords for convenience
-now: hg for hostgroup and cls for class. Specifying several implies AND
-logic:
+for a search criterias). There are several short keywords for
+convenience now: ``hg`` for hostgroup, ``cls`` for class, ``env`` for
+environment and ``os`` for OS family (Debian, RedHat etc). Specifying
+several implies AND logic:
 
 ::
 
@@ -375,7 +400,14 @@ No compatibility with future versions is guaranteed yet.
 E. Putrya. It's not yet released to opensource, but I'm sure it will
 eventually.
 
-It should work on python2.7+, python3.2+.
+``swk`` uses a small part of ``yolk3k`` package by Rob Cakebread
+(sources can be found on `github <https://github.com/cakebread/yolk>`__,
+distribution on `pypi <https://pypi.python.org/pypi/yolk3k>`__) to
+handle self-update noticing mechanics. You can turn new version checking
+by modifying **swk.ini** parameter 'check\_for\_updates' to anything but
+'yes'.
+
+It should work on python2.7.6+, python3.3+.
 
 Usage notes
            
@@ -390,6 +422,15 @@ Usage notes
 -  Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks
    from multiprocessing)
 -  interactive user input is NOT supported when running a command
+-  if you have several Foreman hostgroups named the same, but different
+   hierarchically (for example, ``debian/mysql`` and ``mysql``),
+   ``getgcls``, ``addgcls`` and ``rmgcls`` will work with the first
+   group returned by Foreman API.
+-  Foreman ``srch`` routines may work not as you expect, because ``swk``
+   relies completely on Foreman's API. For example,
+   ``swk srch cls!=myclass`` won't give neither any useful results nor
+   error, but this is how API is designed. To check if your query really
+   works, try it in the web interface first.
 
 Dev notes
          
@@ -406,7 +447,7 @@ Dependencies
 ''''''''''''
 
 -  for main program: `exrex <https://github.com/asciimoo/exrex>`__
-   `pypsi <https://github.com/ameily/pypsi>`__
+   `pypsi <https://github.com/ameily/pypsi>`__ configparser
 -  for ssh plugin: `paramiko <https://github.com/paramiko/paramiko>`__
    `scp <https://github.com/jbardin/scp.py>`__
 -  for swk-casp plugin:

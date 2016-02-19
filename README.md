@@ -8,6 +8,12 @@ swk pssh ^mysql 'sudo rm -rf /var/lib/mysql'
 ```
 (yeah, you really shouldn't do that in production environment. Unless you're angry and desperate.)
 
+##### Please update
+If you're using `swk` older than v0.0.4a13, please update to the latest version. There's a whole
+lot of bugfixes every week, as development's in progress, thus I've included auto check for updates
+function. It runs once a day when you run swk, and outputs to stderr if newer version is available.
+ You can turn it off by setting 'check_for_updates' to anything but 'yes' in **swk.ini** .
+
 ### What can it do?
 The basic idea is: you specify what to do (a command), a list of hosts or hostgroups to do that with, and
 additional arguments if needed (depends on what you want to do). You can easily define your own commands
