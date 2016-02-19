@@ -82,7 +82,7 @@ class SwissKnife(object):
                       "in {0}.".format(self._swk_config_filename))
                 last_version = self._version
             if check_updates.get_highest_version([self._version, last_version]) != self._version:
-                print("You're using swk v{old}, but v{new} is available! Please upgrade.".format(
+                sys.stderr.write("You're using swk v{old}, but v{new} is available! Please upgrade.\n".format(
                     old=self._version, new=last_version
                 ))
             with open(self._swk_check_updates_marker_full_path, mode='w'):

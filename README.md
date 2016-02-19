@@ -37,8 +37,8 @@ pip install swk-zabbix
 Upon first execution `swk`` will create **~/.swk** directory, where you should find **swk.ini** configuration
 file, and that's used to store shell mode command history, program's log, various plugins' cache, etc.
 
-Please note that you should use python3.2+ for shell mode to work. Everything else should work with
-python2.7. You probably may have to update `pip` and `setuptools` (`pip install --upgrade pip setuptools`).
+Please note that you should use python3.3+ for shell mode to work. Everything else should work with
+python2.7.6+. You probably may have to update `pip` and `setuptools` (`pip install --upgrade pip setuptools`).
 You also may have to do all of these with `sudo`, or fall into your **virtualenv** if you use one.
 
 
@@ -180,7 +180,7 @@ Env:		production
 Comment:	my favorite host!
 ```
 Or search hosts by a given criteria (Foreman doesn't support everything for a search criterias). There are
-two short keywords for convenience now: `hg` for hostgroup, `cls` for class, `env`
+several short keywords for convenience now: `hg` for hostgroup, `cls` for class, `env`
 for environment and `os` for OS family (Debian, RedHat etc). Specifying several implies AND logic:
 ```
 swk srch cls=my_awesome_puppet_class
@@ -300,11 +300,12 @@ No compatibility with future versions is guaranteed yet.
 
 `casp` is a nice piece of software written by my former colleague Stan E. Putrya. It's not yet released to opensource, but I'm sure it will eventually.
 
-`swk` uses a small part of `yolk3k` package that can be found on [github](https://github.com/cakebread/yolk)
-by Rob Cakebread to handle self-update noticing mechanics. You can turn new version checking by modifying
+`swk` uses a small part of `yolk3k` package by Rob Cakebread (sources can be found on [github](https://github.com/cakebread/yolk),
+distribution on [pypi](https://pypi.python.org/pypi/yolk3k))
+ to handle self-update noticing mechanics. You can turn new version checking by modifying
 **swk.ini** parameter 'check_for_updates' to anything but 'yes'.
 
-It should work on python2.7+, python3.2+.
+It should work on python2.7.6+, python3.3+.
 
 ###### Usage notes
 
@@ -332,6 +333,7 @@ API is designed. To check if your query really works, try it in the web interfac
 - for main program:
     [exrex](https://github.com/asciimoo/exrex)
     [pypsi](https://github.com/ameily/pypsi)
+    configparser
 - for ssh plugin:
     [paramiko](https://github.com/paramiko/paramiko)
     [scp](https://github.com/jbardin/scp.py)
