@@ -24,8 +24,10 @@ your environment about which hosts are included in provided hostgroup). Basic Fo
 Please note that this is *not* `fabric` (though it uses `paramiko`, both are marvellous pieces of
 software). This utility is designed to work in small environments, it's
 very easy to use (not harder than shell) and to configure, it has no learning curve, and it provides
-a way to execute quick-and-dirty commands on a lot of hosts at hand.
-And it's also easily extendable by plugins.
+a way to execute quick-and-dirty commands on a lot of hosts at hand. You may think of it as of an ad-hoc version of
+`ansible` that requires very little effort to get usable in your infrastructure (writing parsers to
+get advantage of tools dividing your hosts to hostgroups) or no effort at all if you happen to use
+Foreman, Zabbix or third-party host grouping tools.
 
 ### Installation
 

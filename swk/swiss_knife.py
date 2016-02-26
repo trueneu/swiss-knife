@@ -71,15 +71,16 @@ class SwissKnife(object):
         now_timestamp = (now - datetime.datetime(1970, 1, 1)).total_seconds()
         try:
             check_updates_marker_mtime = os.path.getmtime(self._swk_check_updates_marker_full_path)
-        except IOError:
+        except (IOError, OSError):
             check_updates_marker_mtime = now_timestamp - (self._swk_check_updates_period + 1)
         if now_timestamp - check_updates_marker_mtime > self._swk_check_updates_period:
             try:
                 cheese_shop = check_updates.CheeseShop()
                 last_version = cheese_shop.package_releases(self._swk_package_name)[0]
             except:
-                print("Couldn't run check for new versions. Please check your Internet settings or turn it off"
-                      "in {0}.".format(self._swk_config_filename))
+                sys.stderr.write("Couldn't run check for new versions. Please check your Internet settings or turn "
+                                 "checking for updates off"
+                                 "in {0}.\n".format(self._swk_config_filename))
                 last_version = self._version
             if check_updates.get_highest_version([self._version, last_version]) != self._version:
                 sys.stderr.write("You're using swk v{old}, but v{new} is available! Please upgrade.\n".format(
@@ -206,6 +207,7 @@ class SwissKnife(object):
         for entry_point in pkg_resources.iter_entry_points(group='swk_plugin', name=None):
             #first variant
             module_name = entry_point.module_name
+
             if module_name in self._disabled_plugins or module_name in ['__init__']:
                 continue
             try:

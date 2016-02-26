@@ -6,6 +6,9 @@ glob expansion on non-local fs? -- it's bash
 General: try-except unloadable modules
 General: logging warnings output to stdout even with error logging level
 General: requirements based on python2/3 ?
+General: configparser requirement seems bugged
+SSH: direct fix stub output to stderr
+SSH: fix stub output format -- quotes around the command
 
 Re-do
 SSH: try to use fabric in ssh module? -- python3 in unsupported =\
@@ -24,9 +27,7 @@ SWK: Make expand_hostlist and run a command unprotected methods, insert swk_inst
     so plugins are able to call other plugins
 SSH: add glob support for gather/dist
 General: local commit hook to convert .md to .rst
-General: come up with an autoupdate mech:
-    yolklib -- get_higher_vers
-    pypi -- package_releases
+General: come up with an autoupdate mech for plugins
 
 General
 - come up with a name convention of module names and such
