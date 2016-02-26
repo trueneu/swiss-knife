@@ -129,7 +129,7 @@ class SwissKnife(object):
         self._swk_plugins_dirs = [os.path.expanduser(x) for x in self._config["Main"].get("plugins_directories", "").split()]
         self._swk_plugins_dirs.append("{0}/{1}".format(self._swk_dir, self.swk_plugin_dir_default))
         self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules,\
-            modules_package_version_dict = self._()
+            modules_package_version_dict = self._modules_import()
 
         package_version_dict.update(modules_package_version_dict)
         if self._config["Main"].get("check_for_updates", "no") == "yes":
@@ -193,7 +193,7 @@ class SwissKnife(object):
         logging.debug("swk died")
         exit(2)
 
-    def modules_import_modules_import(self):
+    def _modules_import(self):
 
         module_filenames = list()
         plugin_modules = list()
