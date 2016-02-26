@@ -22,7 +22,9 @@ your environment about which hosts are included in provided hostgroup). Basic Fo
  functions are supported out of the box.
 
 Please note that this is *not* `fabric` (though it uses `paramiko`, both are marvellous pieces of
-software). This utility is designed to work in small environments and perform ad-hoc operations, it's
+software), and this is *not* `pssh` (it uses its own way of parallelling ssh sessions,
+and its own output handling). This utility is designed to work in
+small environments and perform ad-hoc operations, it's
 very easy to use (not harder than shell) and to configure, it has no learning curve, and it provides
 a way to execute quick-and-dirty commands on a lot of hosts at hand. You may think of it as of a version of
 `ansible -a` that requires very little effort to get usable in your infrastructure (writing parsers to
@@ -84,7 +86,9 @@ describing hosts (`desc`).
 To install them, please refer to [Installation](#Installation) section above.
 Also, please read [Usage notes](#usage-notes) below before using.
 
-Hopefully, there are more coming.
+Don't forget to make changes to your **swk.ini** before using plugins (credentials/urls and such).
+
+Hopefully, there are more plugins coming.
 
 ### Examples
 Imagine that you need to grep all your frontend nginx logs for string '/api/do_something'. Your frontend hostnames
@@ -116,7 +120,7 @@ frontend25
 Suppose you also have servers `backend01`, `backend02`, ..., `backend10`, and you want to run `uptime` on both
 frontends and backends. Try this one:
 
-```swk pssh 'frontend([0-1][0-9]|2[0-5]) -frontend00,backend(0[1-9]|10)' uptime```
+```swk pssh 'frontend([0-1][0-9]|2[0-5]) -frontend00 backend(0[1-9]|10)' uptime```
 
 Now imagine you have to execute a certain script named `test.sh` on those 25 frontends locally. First, copy it to target hosts:
 
@@ -289,7 +293,7 @@ and environment name exactly. So `swiss-knife` is a simple instrument to make si
 can be extended rather easily.
 
 There's a few possible reasons you'll find it useful:
-- You are a system administrator. If you're not, it's doubtfully be useful for you in any way
+- You are a system administrator. If you're not, it's doubtfully can be useful for you in any way
 - You hate clicking GUIs just like me, and your GUI instrument(s) has an API you could use
 - There's no such an instrument in your environment: it's either de-centralized and/or you don't use configuration
 management software and its tools heavily
@@ -310,15 +314,15 @@ No compatibility with future versions is guaranteed yet.
 
 `swk` uses a small part of `yolk3k` package by Rob Cakebread (sources can be found on [github](https://github.com/cakebread/yolk),
 distribution on [pypi](https://pypi.python.org/pypi/yolk3k))
- to handle self-update noticing mechanics. You can turn new version checking by modifying
+ to handle self-update noticing mechanics. You can turn new version checking off by modifying
 **swk.ini** parameter 'check_for_updates' to anything but 'yes'.
 
 It should work on python2.7.6+, python3.3+.
 
 ###### Usage notes
 
-- currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host as
-left bracket will be treated as a hostgroup modifier.
+- currently, host cannot start with non-alphanumerical character. This breaks using something like (host|hos)123 as a host
+expression as left bracket will be treated as a hostgroup modifier.
 - ssh module needs a running ssh-agent with private keys added, or private keys need to remain password free
 - username for ssh specified in **swk.ini** will override your current username and username from .ssh/config if present
 - Ctrl-C works poorly when pssh'ing (providing you unneeded tracebacks from multiprocessing)
