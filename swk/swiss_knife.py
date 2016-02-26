@@ -44,7 +44,7 @@ class SwissKnife(object):
     _swk_config_filename = "swk.ini"
     _swk_config_full_path = os.path.join(os.path.expanduser(_swk_config_path), _swk_config_filename)
     _swk_package_name = 'swk'
-    _swk_check_updates_marker_filename = 'checked_update'
+    _swk_check_updates_marker_filename = 'checked_updates'
     _swk_check_updates_marker_full_path = os.path.join(os.path.expanduser(_swk_config_path),
                                                        _swk_check_updates_marker_filename)
     _swk_check_updates_period = 60 * 60 * 24
@@ -66,7 +66,7 @@ class SwissKnife(object):
                 msg = "Couldn't create default config at {path}, aborting.".format(path=self._swk_config_full_path)
                 self._die(msg)
 
-    def _check_updates(self):
+    def _check_updates(self, package_version_dict):
         now = datetime.datetime.utcnow()
         now_timestamp = (now - datetime.datetime(1970, 1, 1)).total_seconds()
         try:
@@ -76,16 +76,36 @@ class SwissKnife(object):
         if now_timestamp - check_updates_marker_mtime > self._swk_check_updates_period:
             try:
                 cheese_shop = check_updates.CheeseShop()
-                last_version = cheese_shop.package_releases(self._swk_package_name)[0]
             except:
-                sys.stderr.write("Couldn't run check for new versions. Please check your Internet settings or turn "
-                                 "checking for updates off"
-                                 "in {0}.\n".format(self._swk_config_filename))
-                last_version = self._version
-            if check_updates.get_highest_version([self._version, last_version]) != self._version:
-                sys.stderr.write("You're using swk v{old}, but v{new} is available! Please upgrade.\n".format(
-                    old=self._version, new=last_version
-                ))
+                msg = "Couldn't run check for new versions. Please check your Internet settings or turn " \
+                      "checking for updates off" \
+                      "in {0}.".format(self._swk_config_filename)
+                logging.error(msg)
+                sys.stderr.write(msg + '\n')
+                sys.stderr.flush()
+                return
+            for k, v in package_version_dict.items():
+                package_name = k
+                installed_version = v
+                try:
+                    last_version = cheese_shop.package_releases(package_name)[0]
+                except:
+                    msg = "Couldn't run check for new versions of {package}. " \
+                          "Please check your Internet settings or turn " \
+                          "checking for updates off" \
+                          "in {conf_file}.".format(conf_file=self._swk_config_filename, package=package_name)
+                    logging.error(msg)
+                    sys.stderr.write(msg + '\n')
+                    sys.stderr.flush()
+                    last_version = installed_version
+                if check_updates.get_highest_version([installed_version, last_version]) != installed_version:
+                    sys.stderr.write("You're using {package} v{old}, but v{new} is available! Please upgrade.\n".format(
+                        old=installed_version, new=last_version, package=package_name
+                    ))
+                    logging.info("You're using {package} v{old}, but v{new} is available! Please upgrade.\n".format(
+                        old=installed_version, new=last_version, package=package_name
+                    ))
+
             with open(self._swk_check_updates_marker_full_path, mode='w'):
                 pass
 
@@ -98,8 +118,7 @@ class SwissKnife(object):
         
         self._logging_init()
 
-        if self._config["Main"].get("check_for_updates", "no") == "yes":
-            self._check_updates()
+        package_version_dict = {self._swk_package_name: self._version}
 
         self._disabled_plugins = [plugin for plugin in self._config["Main"].get("disabled_plugins", "").split()]
 
@@ -109,7 +128,13 @@ class SwissKnife(object):
 
         self._swk_plugins_dirs = [os.path.expanduser(x) for x in self._config["Main"].get("plugins_directories", "").split()]
         self._swk_plugins_dirs.append("{0}/{1}".format(self._swk_dir, self.swk_plugin_dir_default))
-        self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules = self._modules_import()
+        self._plugin_modules, self._plugin_command_modules, self._plugin_parser_modules,\
+            modules_package_version_dict = self._()
+
+        package_version_dict.update(modules_package_version_dict)
+        if self._config["Main"].get("check_for_updates", "no") == "yes":
+            self._check_updates(package_version_dict)
+
         self._available_commands, self._available_parsers = self._get_available_commands_and_parsers()
         self._commands_help_message, self._parsers_help_message, \
             self._commands_help_string, self._parsers_help_string = self._form_commands_and_parsers_help()
@@ -168,13 +193,13 @@ class SwissKnife(object):
         logging.debug("swk died")
         exit(2)
 
-    def _modules_import(self):
+    def modules_import_modules_import(self):
 
         module_filenames = list()
         plugin_modules = list()
         plugin_command_modules = list()
         plugin_parser_modules = list()
-
+        package_version_dict = dict()
         oldcwd = os.getcwd()
 
         # directory imports
@@ -198,7 +223,8 @@ class SwissKnife(object):
                     sys.path.append(os.getcwd())
                     module = __import__(module_name)
                 except ImportError as e:
-                    self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                    # self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                    logging.error("Couldn't import module {0}: {1}.".format(module_name, str(e)))
                 plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                        if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
         os.chdir(oldcwd)
@@ -213,7 +239,14 @@ class SwissKnife(object):
             try:
                 module = __import__(module_name, fromlist=[module_name[:module_name.rfind('.')]])
             except ImportError as e:
-                self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                # self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                logging.error("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+            try:
+                package_version = __import__(module_name[:module_name.rfind('.')] + '.version',
+                                             fromlist=[module_name[:module_name.rfind('.')]])
+                package_version_dict[module_name[:module_name.rfind('.')].replace('_', '-')] = package_version.__version__
+            except ImportError:
+                pass
 
             plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                    if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
@@ -238,7 +271,7 @@ class SwissKnife(object):
         logging.debug("All modules: {0}".format(plugin_modules))
         logging.debug("Command modules: {0}".format(plugin_command_modules))
         logging.debug("Parser modules: {0}".format(plugin_parser_modules))
-        return plugin_modules, plugin_command_modules, plugin_parser_modules
+        return plugin_modules, plugin_command_modules, plugin_parser_modules, package_version_dict
 
     def _get_available_commands_and_parsers(self):
         available_commands = dict()

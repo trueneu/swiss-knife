@@ -39,8 +39,12 @@ Please note that this is *not* ``fabric`` (though it uses ``paramiko``,
 both are marvellous pieces of software). This utility is designed to
 work in small environments, it's very easy to use (not harder than
 shell) and to configure, it has no learning curve, and it provides a way
-to execute quick-and-dirty commands on a lot of hosts at hand. And it's
-also easily extendable by plugins.
+to execute quick-and-dirty commands on a lot of hosts at hand. You may
+think of it as of an ad-hoc version of ``ansible`` that requires very
+little effort to get usable in your infrastructure (writing parsers to
+get advantage of tools dividing your hosts to hostgroups) or no effort
+at all if you happen to use Foreman, Zabbix or third-party host grouping
+tools.
 
 Installation
 ~~~~~~~~~~~~
@@ -426,6 +430,9 @@ Usage notes
    hierarchically (for example, ``debian/mysql`` and ``mysql``),
    ``getgcls``, ``addgcls`` and ``rmgcls`` will work with the first
    group returned by Foreman API.
+-  using ``dist`` and ``gather`` commands has a little trick: if you
+   want the name expansion to be done at the remote side instead of
+   local by your shell when not in swk shell mode, quote it.
 -  Foreman ``srch`` routines may work not as you expect, because ``swk``
    relies completely on Foreman's API. For example,
    ``swk srch cls!=myclass`` won't give neither any useful results nor
@@ -442,6 +449,9 @@ Dev notes
 -  all the information you've mentioned in config is also added to class
    attributes. Section must be named the same as the class that is being
    configured for this to work; **[Main]** section is for swk program
+-  in order to be supported in update checker, your package should have
+   a **version.py** file with ``__version__`` string determining package
+   version.
 
 Dependencies
 ''''''''''''

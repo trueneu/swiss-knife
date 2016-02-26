@@ -368,13 +368,19 @@ class SSHPlugin(classes.SWKCommandPlugin):
 
         failed_hosts_no_comma = failed_hosts_no_comma[:-1]
         if failed_hosts_present:
-            sys.stdout.write("\n===\nFailed hosts (exit_status: hosts):\n")
+            sys.stderr.write("\n===\nNon-0 exit status: host; (it's not always an error)\n")
             for k, v in self._exit_statuses.items():
                 if k != 0:
-                    sys.stdout.write("%s: %s;\n" % (str(k), str(v)))
-            fix_command = "\nFix: {0} \"{1}\" {2}\n".format(self._command, failed_hosts_no_comma,
-                                                            self._ssh_command)
-            sys.stdout.write(fix_command)
+                    sys.stderr.write("%s: %s;\n" % (str(k), str(v)))
+            called_from_shell = getattr(self, '_called_from_shell', False)
+            if called_from_shell:
+                fix_command = "\nRetry: {0} \"{1}\" {2}\n".format(self._command, failed_hosts_no_comma,
+                                                                self._ssh_command)
+            else:
+                fix_command = "\nRetry: {0} {1} \"{2}\" \"{3}\"\n".format("swk", self._command,
+                                                                        failed_hosts_no_comma, self._ssh_command)
+
+            sys.stderr.write(fix_command)
 
     def _run(self):
         self._paramiko_configs_set()
@@ -445,7 +451,6 @@ class SSHPlugin(classes.SWKCommandPlugin):
                 #print("Ctrl-C caught!")
                 raise SSHPluginError("Ctrl-C caught!")
                 #sys.exit(2)
-
 
         self._print_results_summary()
 

@@ -326,6 +326,8 @@ left bracket will be treated as a hostgroup modifier.
 - if you have several Foreman hostgroups named the same, but different hierarchically
 (for example, `debian/mysql` and `mysql`), `getgcls`, `addgcls`
 and `rmgcls` will work with the first group returned by Foreman API.
+- using `dist` and `gather` commands has a little trick: if you want the name expansion to be done
+at the remote side instead of local by your shell when not in swk shell mode, quote it.
 - Foreman `srch` routines may work not as you expect, because `swk` relies completely on Foreman's API. For
 example, `swk srch cls!=myclass` won't give neither any useful results nor error, but this is how
 API is designed. To check if your query really works, try it in the web interface first.
@@ -335,6 +337,8 @@ API is designed. To check if your query really works, try it in the web interfac
 - if a parser doesn't return any hosts, its job is considered failed and desired command doesn't start
 - all the information needed to run a command is added to class attributes, more info on that in **swk_classes**
 - all the information you've mentioned in config is also added to class attributes. Section must be named the same as the class that is being configured for this to work; **[Main]** section is for swk program
+- in order to be supported in update checker, your package should have a **version.py** file with
+`__version__` string determining package version.
 
 ##### Dependencies
 

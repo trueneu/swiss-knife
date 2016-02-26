@@ -1,17 +1,6 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
-SSH: Pavels-MacBook-Pro:mha trueneu$ swk dist xen-trueneu-test[1-5] mha4mysql-* ~/
-[xen-trueneu-test1]: scp: /Users/trueneu/: No such file or directory
-glob expansion on non-local fs? -- it's bash
-General: try-except unloadable modules
-General: logging warnings output to stdout even with error logging level
-General: requirements based on python2/3 ?
-General: configparser requirement seems bugged
-SSH: direct fix stub output to stderr
-SSH: fix stub output format -- quotes around the command
-
-Re-do
-SSH: try to use fabric in ssh module? -- python3 in unsupported =\
+General: requirements based on python2/3 ? six
 
 Improvements
 SSH: refactor the ssh module. it's very, very ugly.
@@ -19,18 +8,11 @@ Zabbix: make mntnce command - maintenance adding/editing in zabbix
 FRMN/ZBX: write commands do determine in which hostgroup(s) the host is. fdesc, zdesc?
 FRMN: add get/set/destroy Foreman parameters commands
 FRMN: add new host/clone host to foreman plugin
-SSH: gather/scp ~ expansion -- did for local paths
-SSH: gather doesn't rename if it's just one host
 SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
-SSH: add glob support for gather/dist
-General: local commit hook to convert .md to .rst
-General: come up with an autoupdate mech for plugins
 
 General
-- come up with a name convention of module names and such
 - insert logging in plugins
-- before pypi: review setup.pys, maybe there's additional info I'd like to add
 

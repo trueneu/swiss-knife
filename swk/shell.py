@@ -156,7 +156,8 @@ class SWKCommand(Command):
                                               swk_dir=self._swk_instance._swk_dir,
                                               swk_path=self._swk_instance._swk_path,
                                               cwd=self._cwd,
-                                              cache_directory=self._swk_instance._cache_directory_expanded)
+                                              cache_directory=self._swk_instance._cache_directory_expanded,
+                                              called_from_shell=True)
 
         logging.info("Executing command with config: {0}".format(self._swk_instance._config[self._command_executer_name]))
         obj = self._command_executer_class(**self._swk_instance._config[self._command_executer_name])
