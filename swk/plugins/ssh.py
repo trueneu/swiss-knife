@@ -368,7 +368,7 @@ class SSHPlugin(classes.SWKCommandPlugin):
 
         failed_hosts_no_comma = failed_hosts_no_comma[:-1]
         if failed_hosts_present:
-            sys.stderr.write("\n===\nNon-0 exit status: host; (it's not always an error)\n")
+            sys.stderr.write("\n===\ncmd exit status: host\n")
             for k, v in self._exit_statuses.items():
                 if k != 0:
                     sys.stderr.write("%s: %s;\n" % (str(k), str(v)))
