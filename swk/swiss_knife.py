@@ -78,7 +78,7 @@ class SwissKnife(object):
                 cheese_shop = check_updates.CheeseShop()
             except:
                 msg = "Couldn't run check for new versions. Please check your Internet settings or turn " \
-                      "checking for updates off" \
+                      "checking for updates off " \
                       "in {0}.".format(self._swk_config_filename)
                 logging.error(msg)
                 sys.stderr.write(msg + '\n')
@@ -92,7 +92,7 @@ class SwissKnife(object):
                 except:
                     msg = "Couldn't run check for new versions of {package}. " \
                           "Please check your Internet settings or turn " \
-                          "checking for updates off" \
+                          "checking for updates off " \
                           "in {conf_file}.".format(conf_file=self._swk_config_filename, package=package_name)
                     logging.error(msg)
                     sys.stderr.write(msg + '\n')
@@ -244,7 +244,7 @@ class SwissKnife(object):
             try:
                 package_version = __import__(module_name[:module_name.rfind('.')] + '.version',
                                              fromlist=[module_name[:module_name.rfind('.')]])
-                package_version_dict[module_name[:module_name.rfind('.')].replace('_', '-')] = package_version.__version__
+                package_version_dict[module_name[:module_name.rfind('.')]] = package_version.__version__
             except ImportError:
                 pass
 
