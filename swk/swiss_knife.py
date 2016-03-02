@@ -225,6 +225,7 @@ class SwissKnife(object):
                 except ImportError as e:
                     # self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
                     logging.error("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                    continue
                 plugin_modules.extend([(name, obj) for (name, obj) in inspect.getmembers(module)
                                        if inspect.isclass(obj) and issubclass(obj, classes.SWKPlugin)])
         os.chdir(oldcwd)
@@ -241,6 +242,7 @@ class SwissKnife(object):
             except ImportError as e:
                 # self._die("Couldn't import module {0}: {1}.".format(module_name, str(e)))
                 logging.error("Couldn't import module {0}: {1}.".format(module_name, str(e)))
+                continue
             try:
                 package_version = __import__(module_name[:module_name.rfind('.')] + '.version',
                                              fromlist=[module_name[:module_name.rfind('.')]])
