@@ -14,6 +14,7 @@ SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
 SSH: ProxyCommand support
+General: write in readme about pip install --pre
 
 General
 - insert logging in plugins

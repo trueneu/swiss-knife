@@ -16,7 +16,7 @@ from swk import classes
 import inspect
 from swk import exceptions
 import argparse
-import configparser
+from six.moves import configparser
 import sys
 import exrex
 import pkg_resources
