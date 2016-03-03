@@ -1,6 +1,7 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
 General: requirements based on python2/3 ? six
+        configparser dependency seems to be broken
 
 Improvements
 SSH: refactor the ssh module. it's very, very ugly.
@@ -12,7 +13,7 @@ SHELL: look into file path completion pypsi
 SHELL: tab completion for hosts and/or hostgroups
 SWK: Make expand_hostlist and run a command unprotected methods, insert swk_instance in parameters passed
     so plugins are able to call other plugins
+SSH: ProxyCommand support
 
 General
 - insert logging in plugins
-
