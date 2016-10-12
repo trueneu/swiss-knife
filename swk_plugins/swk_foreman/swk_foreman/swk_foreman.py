@@ -295,7 +295,7 @@ class ForemanPlugin(classes.SWKParserPlugin, classes.SWKCommandPlugin):
 
     def _parse_key_equals_value(self, args_list):
         result = dict()
-        relational_operators = ['!=', '!~', '!^', '=', '~', '^']
+        relational_operators = ['!=', '!~', '!^', '=', '~', '^', '>', '<', '>=', '<=']
         for entry in args_list:
             parts = None
             for relational_operator in relational_operators:
