@@ -13,6 +13,7 @@ import logging
 import datetime
 import re
 from itertools import chain
+import time
 
 
 class ZabbixError(classes.SWKCommandError, classes.SWKParsingError):
@@ -61,7 +62,7 @@ class ZabbixPlugin(classes.SWKCommandPlugin, classes.SWKParserPlugin):
 
     def _lsmntnce(self):
         zapi = self._zbx_connect()
-        now_ts = datetime.datetime.now().timestamp()
+        now_ts = int(time.mktime(datetime.datetime.now().timetuple()))
         maintenances = zapi.maintenance.get(output=["name", "active_since", "active_till"],
                                             selectHosts=["name"],
                                             selectGroups=["name"])
@@ -92,7 +93,7 @@ class ZabbixPlugin(classes.SWKCommandPlugin, classes.SWKParserPlugin):
         return seconds * multiplier
 
     def _addmntnce(self):
-        now_ts = int(datetime.datetime.now().timestamp())
+        now_ts = int(time.mktime(datetime.datetime.now().timetuple()))
         try:
             mntnce_name = "{}:: {}".format(self._user, ' '.join(self._command_args[0:-1]))
         except IndexError:
@@ -134,7 +135,6 @@ class ZabbixPlugin(classes.SWKCommandPlugin, classes.SWKParserPlugin):
             zapi.maintenance.delete(mntnce_id)
         else:
             raise ZabbixError("Maintenance doesn't exist")
-
 
     def run_command(self):
         if self._command == 'lszbx':
