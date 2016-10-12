@@ -74,8 +74,8 @@ class ZabbixPlugin(classes.SWKCommandPlugin, classes.SWKParserPlugin):
 
             active_since = datetime.datetime.fromtimestamp(active_since_ts)
             active_till = datetime.datetime.fromtimestamp(active_till_ts)
-            sys.stdout.write('{modifier_s}{since} - {till}\t {name:<40}\t{hosts_groups}{modifier_k}\n'.format(
-                since=active_since, till=active_till, name=maintenance['name'],
+            sys.stdout.write('{modifier_s}{since} - {till}\t {name!s:<40}\t{hosts_groups}{modifier_k}\n'.format(
+                since=active_since, till=active_till, name=maintenance['name'].encode('utf-8'),
                 hosts_groups=hosts_groups,
                 modifier_s='' if active_till_ts > now_ts else '\033[1;31m',
                 modifier_k='' if active_till_ts > now_ts else '\033[0m',
