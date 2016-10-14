@@ -76,7 +76,9 @@ hosts over ssh (`gather`)
 - and just displaying results of hostlist expansion (`dr` for 'dry-run')
 
 By installing additional packages named `swk-<plugin_name>`, you also get
-- expanding **zabbix** hostgroups (`^` modifier), **casp** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
+- expanding **zabbix** hostgroups (`^` modifier), listing, adding and removing maintenance
+periods in Zabbix (`lsmntnce`, `addmntnce` and `rmmntnce` commands)
+- expanding **casp** hostgroups (`%` modifier), special `ALL` hostgroup expanding to all the hosts
 - getting and setting hosts environments in **Foreman** (`getenv`
 and `setenv` commands), getting, adding and removing classes linked to hosts and hostgroups (`getcls`, `addcls`,
 `rmcls`, `getgcls`, `addgcls`, `rmgcls` respectively), searching hosts and hostgroups
