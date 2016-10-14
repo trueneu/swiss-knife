@@ -1,7 +1,6 @@
 Bugfixes
 SSH: rewrite sk-ssh ctrl+c exiting/catching
-General: requirements based on python2/3 ? six
-        configparser dependency seems to be broken
+    caught a bug: when pssh'ing vs a non-responding host and then ctrl+c before it times out
 
 Improvements
 SSH: refactor the ssh module. it's very, very ugly.
@@ -15,6 +14,7 @@ SWK: Make expand_hostlist and run a command unprotected methods, insert swk_inst
     so plugins are able to call other plugins
 SSH: ProxyCommand support
 General: write in readme about pip install --pre
+General: executable permissions?
 
 General
 - insert logging in plugins
